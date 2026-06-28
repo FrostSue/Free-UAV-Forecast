@@ -19,7 +19,12 @@ const useWeatherData = () => {
 
       const current = data.current;
       const hourly = data.hourly;
-      const nowIndex = 0; 
+      
+      const now = new Date();
+      let nowIndex = hourly.time.findIndex(timeStr => new Date(timeStr) > now) - 1;
+      if (nowIndex < 0) nowIndex = 0;
+
+      const hourlySlice = hourly.time.slice(nowIndex, nowIndex + 12);
 
       const formattedData = {
         current: {
@@ -38,15 +43,18 @@ const useWeatherData = () => {
           kpIndex: 1.5, 
           satsLocked: 20 
         },
-        hourlyForecast: hourly.time.slice(0, 12).map((timeStr, i) => ({
-          time: timeStr,
-          gusts: hourly.wind_gusts_10m[i],
-          temperature: hourly.temperature_2m[i],
-          precipProb: hourly.precipitation_probability[i],
-          cloudCover: hourly.cloud_cover[i],
-          kpIndex: 1.5,
-          isGoodToFly: hourly.wind_gusts_10m[i] < 25 && hourly.precipitation_probability[i] < 20
-        })),
+        hourlyForecast: hourlySlice.map((timeStr, index) => {
+          const i = nowIndex + index;
+          return {
+            time: timeStr,
+            gusts: hourly.wind_gusts_10m[i],
+            temperature: hourly.temperature_2m[i],
+            precipProb: hourly.precipitation_probability[i],
+            cloudCover: hourly.cloud_cover[i],
+            kpIndex: 1.5,
+            isGoodToFly: hourly.wind_gusts_10m[i] < 25 && hourly.precipitation_probability[i] < 20
+          };
+        }),
         windProfile: [
           { altitudeKey: 'ground', windSpeed: current.wind_speed_10m, gustSpeed: current.wind_gusts_10m, temperature: current.temperature_2m },
           { altitudeKey: 'alt80m', windSpeed: hourly.wind_speed_80m[nowIndex], gustSpeed: (hourly.wind_gusts_10m[nowIndex] * 1.2).toFixed(1), temperature: hourly.temperature_80m[nowIndex] },
@@ -88,7 +96,7 @@ const useWeatherData = () => {
     updateLocation();
   }, []);
 
-  return { loading, error, locationName, weatherData, updateLocation };
+  return { loading, error, locationName, weatherData, updateLocation, fetchWeather };
 };
 
 export default useWeatherData;

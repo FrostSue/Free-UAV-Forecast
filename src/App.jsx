@@ -4,22 +4,24 @@ import FlightStatus from './components/FlightStatus';
 import MetricsGrid from './components/MetricsGrid';
 import HourlyForecast from './components/HourlyForecast';
 import WindProfile from './components/WindProfile';
+import LocationModal from './components/LocationModal';
 import useWeatherData from './hooks/useWeatherData';
 import { locales } from './utils/locales';
 
 const App = () => {
   const [language, setLanguage] = useState('tr');
-  const { loading, error, locationName, weatherData, updateLocation } = useWeatherData();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { loading, error, locationName, weatherData, fetchWeather } = useWeatherData();
   const t = locales[language];
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-emerald-500 selection:text-white">
-      <div className="max-w-md mx-auto bg-slate-900 min-h-screen shadow-2xl overflow-hidden flex flex-col border-x border-slate-800">
+      <div className="max-w-md mx-auto bg-slate-900 min-h-screen shadow-2xl overflow-hidden flex flex-col border-x border-slate-800 relative">
         <Header
           language={language}
           setLanguage={setLanguage}
           locationName={locationName || (loading ? t.loading : '')}
-          onUpdateLocation={updateLocation}
+          onOpenModal={() => setIsModalOpen(true)}
         />
 
         {error ? (
@@ -42,6 +44,13 @@ const App = () => {
             <WindProfile profileData={weatherData.windProfile} language={language} />
           </div>
         )}
+
+        <LocationModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSelect={fetchWeather}
+          language={language}
+        />
       </div>
     </div>
   );

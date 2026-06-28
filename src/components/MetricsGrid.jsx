@@ -20,8 +20,8 @@ const MetricsGrid = ({ data, language }) => {
       {renderCard(t.weather, data.weatherCode <= 3 ? t.clear : t.rain)}
       {renderCard(t.sunTimes, data.sunrise, data.sunset)}
       {renderCard(t.temperature, `${data.temperature}°C`, `${t.dewPoint}: ${data.dewPoint}°C`)}
-      {renderCard(t.wind, `${data.windSpeed} ${t.kmh}`, `${t.maxAltitude} 5000+ ft`)}
-      {renderCard(t.gusts, `${data.windGusts} ${t.kmh}`, `${t.maxAltitude} 5000+ ft`)}
+      {renderCard(t.wind, `${data.windSpeed} ${t.kmh}`, t.alt5000)}
+      {renderCard(t.gusts, `${data.windGusts} ${t.kmh}`, t.alt5000)}
       {renderCard(t.windDir, data.windDir)}
       {renderCard(t.precipProb, `${data.precipProb}%`)}
       {renderCard(t.cloudCover, `${data.cloudCover}%`)}

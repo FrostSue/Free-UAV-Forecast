@@ -44,6 +44,7 @@ export const locales = {
     longitude: "Boylam",
     applyCoordinates: "Koordinata Git",
     selectOnMap: "Haritadaki Konumu Seç",
+    confirmLocation: "Konumu Onayla",
     close: "Kapat",
     locationPickerTitle: "Uçuş Konumu Seçin"
   },
@@ -92,6 +93,7 @@ export const locales = {
     longitude: "Longitude",
     applyCoordinates: "Go to Coordinates",
     selectOnMap: "Select Location on Map",
+    confirmLocation: "Confirm Location",
     close: "Close",
     locationPickerTitle: "Select Flight Location"
   }

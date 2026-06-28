@@ -39,7 +39,7 @@ const useWeatherData = () => {
           satsLocked: 20 
         },
         hourlyForecast: hourly.time.slice(0, 12).map((timeStr, i) => ({
-          time: new Date(timeStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          time: timeStr,
           gusts: hourly.wind_gusts_10m[i],
           temperature: hourly.temperature_2m[i],
           precipProb: hourly.precipitation_probability[i],
@@ -48,10 +48,10 @@ const useWeatherData = () => {
           isGoodToFly: hourly.wind_gusts_10m[i] < 25 && hourly.precipitation_probability[i] < 20
         })),
         windProfile: [
-          { altitude: 'ground', windSpeed: current.wind_speed_10m, gustSpeed: current.wind_gusts_10m, temperature: current.temperature_2m },
-          { altitude: '260ft', windSpeed: hourly.wind_speed_80m[nowIndex], gustSpeed: (hourly.wind_gusts_10m[nowIndex] * 1.2).toFixed(1), temperature: hourly.temperature_80m[nowIndex] },
-          { altitude: '400ft', windSpeed: hourly.wind_speed_120m[nowIndex], gustSpeed: (hourly.wind_gusts_10m[nowIndex] * 1.3).toFixed(1), temperature: hourly.temperature_120m[nowIndex] },
-          { altitude: '600ft', windSpeed: hourly.wind_speed_180m[nowIndex], gustSpeed: (hourly.wind_gusts_10m[nowIndex] * 1.5).toFixed(1), temperature: hourly.temperature_180m[nowIndex] }
+          { altitudeKey: 'ground', windSpeed: current.wind_speed_10m, gustSpeed: current.wind_gusts_10m, temperature: current.temperature_2m },
+          { altitudeKey: 'alt80m', windSpeed: hourly.wind_speed_80m[nowIndex], gustSpeed: (hourly.wind_gusts_10m[nowIndex] * 1.2).toFixed(1), temperature: hourly.temperature_80m[nowIndex] },
+          { altitudeKey: 'alt120m', windSpeed: hourly.wind_speed_120m[nowIndex], gustSpeed: (hourly.wind_gusts_10m[nowIndex] * 1.3).toFixed(1), temperature: hourly.temperature_120m[nowIndex] },
+          { altitudeKey: 'alt180m', windSpeed: hourly.wind_speed_180m[nowIndex], gustSpeed: (hourly.wind_gusts_10m[nowIndex] * 1.5).toFixed(1), temperature: hourly.temperature_180m[nowIndex] }
         ],
         isGoodToFly: current.wind_gusts_10m < 25 && hourly.precipitation_probability[nowIndex] < 20
       };

@@ -19,7 +19,7 @@ const MetricsGrid = ({ data, language }) => {
     <div className="flex flex-col items-center justify-center p-3 text-center bg-emerald-800 text-white rounded-md shadow-sm border border-emerald-700">
       <span className="text-xs font-light text-emerald-200 mb-1">{title}</span>
       <span className="text-lg font-semibold tracking-tight w-full break-words">{value}</span>
-      {subValue && <span className="text-xs font-light text-emerald-100 mt-1">{subValue}</span>}
+      {subValue && <span className="text-[10px] font-medium text-amber-300 mt-1">{subValue}</span>}
     </div>
   );
 
@@ -35,7 +35,7 @@ const MetricsGrid = ({ data, language }) => {
       {renderCard(t.cloudCover, `${data.cloudCover}%`)}
       {renderCard(t.visibility, `${language === 'tr' ? data.visibilityKm : data.visibilityMiles} ${t.visibilityUnit}`)}
       {renderCard(t.visibleSats, data.visibleSats)}
-      {renderCard(t.kpIndex, data.kpIndex)}
+      {renderCard(t.kpIndex, data.kpIndex, t.kpWarning)}
       {renderCard(t.satsLocked, data.satsLocked)}
     </div>
   );

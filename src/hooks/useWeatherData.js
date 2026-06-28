@@ -23,7 +23,7 @@ const useWeatherData = () => {
 
       const formattedData = {
         current: {
-          weatherCondition: current.weather_code <= 3 ? "Clear/Partly Cloudy" : "Overcast/Rain",
+          weatherCode: current.weather_code,
           sunrise: "05:15", 
           sunset: "20:00", 
           temperature: current.temperature_2m,

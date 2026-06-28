@@ -1,9 +1,12 @@
 import { locales } from '../utils/locales';
 
-const WindProfile = ({ windProfileData, language }) => {
+const WindProfile = ({ data, windProfileData, language }) => {
   const t = locales[language];
+  
+  // Ana dosyadan veri "data" veya "windProfileData" adıyla gelse bile yakala
+  const activeData = data || windProfileData;
 
-  if (!windProfileData || windProfileData.length === 0) return null;
+  if (!activeData || activeData.length === 0) return null;
 
   return (
     <div className="w-full bg-slate-900 border-t border-slate-700">
@@ -22,7 +25,7 @@ const WindProfile = ({ windProfileData, language }) => {
             </tr>
           </thead>
           <tbody>
-            {windProfileData.map((tier, index) => {
+            {activeData.map((tier, index) => {
               const isGood = parseFloat(tier.gustSpeed) < 25;
               return (
                 <tr key={index} className="border-b border-slate-800 hover:bg-slate-800/50 transition-colors">

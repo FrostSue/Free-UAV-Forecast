@@ -6,6 +6,8 @@ const useWeatherData = () => {
   const [locationName, setLocationName] = useState("");
   const [weatherData, setWeatherData] = useState(null);
 
+  const lerp = (x, x0, x1, y0, y1) => y0 + ((x - x0) / (x1 - x0)) * (y1 - y0);
+
   const fetchWeather = async (lat, lon, customName = null) => {
     try {
       setLoading(true);
@@ -26,6 +28,18 @@ const useWeatherData = () => {
 
       const hourlySlice = hourly.time.slice(nowIndex, nowIndex + 12);
 
+      const w10 = current.wind_speed_10m;
+      const w80 = hourly.wind_speed_80m[nowIndex];
+      const w120 = hourly.wind_speed_120m[nowIndex];
+      const w180 = hourly.wind_speed_180m[nowIndex];
+
+      const t2 = current.temperature_2m;
+      const t80 = hourly.temperature_80m[nowIndex];
+      const t120 = hourly.temperature_120m[nowIndex];
+      const t180 = hourly.temperature_180m[nowIndex];
+
+      const g10 = current.wind_gusts_10m;
+
       const formattedData = {
         current: {
           weatherCode: current.weather_code,
@@ -35,7 +49,7 @@ const useWeatherData = () => {
           dewPoint: hourly.dew_point_2m[nowIndex],
           windSpeed: current.wind_speed_10m,
           windGusts: current.wind_gusts_10m,
-          windDir: `${current.wind_direction_10m}°`,
+          windDirDegree: current.wind_direction_10m,
           precipProb: hourly.precipitation_probability[nowIndex],
           cloudCover: current.cloud_cover,
           visibility: hourly.visibility[nowIndex] / 1000, 
@@ -47,7 +61,6 @@ const useWeatherData = () => {
           const i = nowIndex + index;
           return {
             time: timeStr,
-            gusts: hourly.wind_gusts_10m[i],
             temperature: hourly.temperature_2m[i],
             precipProb: hourly.precipitation_probability[i],
             cloudCover: hourly.cloud_cover[i],
@@ -56,10 +69,13 @@ const useWeatherData = () => {
           };
         }),
         windProfile: [
-          { altitudeKey: 'ground', windSpeed: current.wind_speed_10m, gustSpeed: current.wind_gusts_10m, temperature: current.temperature_2m },
-          { altitudeKey: 'alt80m', windSpeed: hourly.wind_speed_80m[nowIndex], gustSpeed: (hourly.wind_gusts_10m[nowIndex] * 1.2).toFixed(1), temperature: hourly.temperature_80m[nowIndex] },
-          { altitudeKey: 'alt120m', windSpeed: hourly.wind_speed_120m[nowIndex], gustSpeed: (hourly.wind_gusts_10m[nowIndex] * 1.3).toFixed(1), temperature: hourly.temperature_120m[nowIndex] },
-          { altitudeKey: 'alt180m', windSpeed: hourly.wind_speed_180m[nowIndex], gustSpeed: (hourly.wind_gusts_10m[nowIndex] * 1.5).toFixed(1), temperature: hourly.temperature_180m[nowIndex] }
+          { altitudeKey: 'alt20m', windSpeed: lerp(20, 10, 80, w10, w80).toFixed(1), gustSpeed: (g10 * 1.03).toFixed(1), temperature: lerp(20, 2, 80, t2, t80).toFixed(1) },
+          { altitudeKey: 'alt40m', windSpeed: lerp(40, 10, 80, w10, w80).toFixed(1), gustSpeed: (g10 * 1.08).toFixed(1), temperature: lerp(40, 2, 80, t2, t80).toFixed(1) },
+          { altitudeKey: 'alt60m', windSpeed: lerp(60, 10, 80, w10, w80).toFixed(1), gustSpeed: (g10 * 1.14).toFixed(1), temperature: lerp(60, 2, 80, t2, t80).toFixed(1) },
+          { altitudeKey: 'alt80m', windSpeed: w80.toFixed(1), gustSpeed: (g10 * 1.20).toFixed(1), temperature: t80.toFixed(1) },
+          { altitudeKey: 'alt120m', windSpeed: w120.toFixed(1), gustSpeed: (g10 * 1.30).toFixed(1), temperature: t120.toFixed(1) },
+          { altitudeKey: 'alt150m', windSpeed: lerp(150, 120, 180, w120, w180).toFixed(1), gustSpeed: (g10 * 1.40).toFixed(1), temperature: lerp(150, 120, 180, t120, t180).toFixed(1) },
+          { altitudeKey: 'alt180m', windSpeed: w180.toFixed(1), gustSpeed: (g10 * 1.50).toFixed(1), temperature: t180.toFixed(1) }
         ],
         isGoodToFly: current.wind_gusts_10m < 25 && hourly.precipitation_probability[nowIndex] < 20
       };

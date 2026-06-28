@@ -17,7 +17,7 @@ const MetricsGrid = ({ data, language }) => {
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 p-2 bg-slate-900">
-      {renderCard(t.weather, data.weatherCondition)}
+      {renderCard(t.weather, data.weatherCode <= 3 ? t.clear : t.rain)}
       {renderCard(t.sunTimes, data.sunrise, data.sunset)}
       {renderCard(t.temperature, `${data.temperature}°C`, `${t.dewPoint}: ${data.dewPoint}°C`)}
       {renderCard(t.wind, `${data.windSpeed} ${t.kmh}`, `${t.maxAltitude} 5000+ ft`)}

@@ -12,6 +12,20 @@ const useWeatherData = () => {
     try {
       setLoading(true);
       setError(null);
+
+      let realKpIndex = 1.5;
+      try {
+        const kpRes = await fetch('https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json');
+        if (kpRes.ok) {
+          const kpData = await kpRes.json();
+          if (kpData && kpData.length > 1) {
+            const latestKpRow = kpData[kpData.length - 1];
+            realKpIndex = parseFloat(latestKpRow[1]);
+          }
+        }
+      } catch (e) {
+        console.warn(e);
+      }
       
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,pressure_msl,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,precipitation,rain,showers,snowfall,snow_depth,weather_code,pressure_msl,surface_pressure,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,evapotranspiration,et0_fao_evapotranspiration,vapour_pressure_deficit,wind_speed_10m,wind_speed_80m,wind_speed_120m,wind_speed_180m,wind_direction_10m,wind_direction_80m,wind_direction_120m,wind_direction_180m,wind_gusts_10m,temperature_80m,temperature_120m,temperature_180m&timezone=auto`;
       
@@ -44,6 +58,8 @@ const useWeatherData = () => {
       const visKm = (visMeters / 1000).toFixed(1);
       const visMiles = (visMeters / 1609.34).toFixed(1);
 
+      const formattedKp = Number(realKpIndex.toFixed(1));
+
       const formattedData = {
         current: {
           weatherCode: current.weather_code,
@@ -59,7 +75,7 @@ const useWeatherData = () => {
           visibilityKm: visKm,
           visibilityMiles: visMiles,
           visibleSats: 22, 
-          kpIndex: 1.5, 
+          kpIndex: formattedKp, 
           satsLocked: 20 
         },
         hourlyForecast: hourlySlice.map((timeStr, index) => {
@@ -69,7 +85,7 @@ const useWeatherData = () => {
             temperature: hourly.temperature_2m[i],
             precipProb: hourly.precipitation_probability[i],
             cloudCover: hourly.cloud_cover[i],
-            kpIndex: 1.5,
+            kpIndex: formattedKp,
             isGoodToFly: hourly.wind_gusts_10m[i] < 25 && hourly.precipitation_probability[i] < 20
           };
         }),

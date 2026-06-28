@@ -26,7 +26,7 @@ const useWeatherData = () => {
       let nowIndex = hourly.time.findIndex(timeStr => new Date(timeStr) > now) - 1;
       if (nowIndex < 0) nowIndex = 0;
 
-      const hourlySlice = hourly.time.slice(nowIndex, nowIndex + 12);
+      const hourlySlice = hourly.time.slice(nowIndex, nowIndex + 72);
 
       const w10 = current.wind_speed_10m;
       const w80 = hourly.wind_speed_80m[nowIndex];
@@ -40,6 +40,10 @@ const useWeatherData = () => {
 
       const g10 = current.wind_gusts_10m;
 
+      const visMeters = hourly.visibility[nowIndex];
+      const visKm = (visMeters / 1000).toFixed(1);
+      const visMiles = (visMeters / 1609.34).toFixed(1);
+
       const formattedData = {
         current: {
           weatherCode: current.weather_code,
@@ -52,7 +56,8 @@ const useWeatherData = () => {
           windDirDegree: current.wind_direction_10m,
           precipProb: hourly.precipitation_probability[nowIndex],
           cloudCover: current.cloud_cover,
-          visibility: hourly.visibility[nowIndex] / 1000, 
+          visibilityKm: visKm,
+          visibilityMiles: visMiles,
           visibleSats: 22, 
           kpIndex: 1.5, 
           satsLocked: 20 
@@ -75,7 +80,10 @@ const useWeatherData = () => {
           { altitudeKey: 'alt80m', windSpeed: w80.toFixed(1), gustSpeed: (g10 * 1.20).toFixed(1), temperature: t80.toFixed(1) },
           { altitudeKey: 'alt120m', windSpeed: w120.toFixed(1), gustSpeed: (g10 * 1.30).toFixed(1), temperature: t120.toFixed(1) },
           { altitudeKey: 'alt150m', windSpeed: lerp(150, 120, 180, w120, w180).toFixed(1), gustSpeed: (g10 * 1.40).toFixed(1), temperature: lerp(150, 120, 180, t120, t180).toFixed(1) },
-          { altitudeKey: 'alt180m', windSpeed: w180.toFixed(1), gustSpeed: (g10 * 1.50).toFixed(1), temperature: t180.toFixed(1) }
+          { altitudeKey: 'alt180m', windSpeed: w180.toFixed(1), gustSpeed: (g10 * 1.50).toFixed(1), temperature: t180.toFixed(1) },
+          { altitudeKey: 'alt250m', windSpeed: Math.max(0, lerp(250, 120, 180, w120, w180)).toFixed(1), gustSpeed: (g10 * 1.65).toFixed(1), temperature: lerp(250, 120, 180, t120, t180).toFixed(1) },
+          { altitudeKey: 'alt300m', windSpeed: Math.max(0, lerp(300, 120, 180, w120, w180)).toFixed(1), gustSpeed: (g10 * 1.80).toFixed(1), temperature: lerp(300, 120, 180, t120, t180).toFixed(1) },
+          { altitudeKey: 'alt400m', windSpeed: Math.max(0, lerp(400, 120, 180, w120, w180)).toFixed(1), gustSpeed: (g10 * 2.00).toFixed(1), temperature: lerp(400, 120, 180, t120, t180).toFixed(1) }
         ],
         isGoodToFly: current.wind_gusts_10m < 25 && hourly.precipitation_probability[nowIndex] < 20
       };
@@ -90,7 +98,7 @@ const useWeatherData = () => {
             finalName = geoData.address.city || geoData.address.town || geoData.address.village || geoData.address.county || geoData.name;
           }
         } catch (e) {
-          console.warn("Tersine geocoding başarısız oldu.");
+          console.warn(e);
         }
       }
 

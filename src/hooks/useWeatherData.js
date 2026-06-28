@@ -19,8 +19,13 @@ const useWeatherData = () => {
         if (kpRes.ok) {
           const kpData = await kpRes.json();
           if (kpData && kpData.length > 1) {
-            const latestKpRow = kpData[kpData.length - 1];
-            realKpIndex = parseFloat(latestKpRow[1]);
+            for (let i = kpData.length - 1; i > 0; i--) {
+              const val = parseFloat(kpData[i][1]);
+              if (!isNaN(val)) {
+                realKpIndex = val;
+                break;
+              }
+            }
           }
         }
       } catch (e) {

@@ -1,12 +1,12 @@
 import { locales } from '../utils/locales';
 
-const WindProfile = ({ data, windProfileData, language }) => {
+const WindProfile = (props) => {
+  const language = props.language || 'tr';
   const t = locales[language];
   
-  // Ana dosyadan veri "data" veya "windProfileData" adıyla gelse bile yakala
-  const activeData = data || windProfileData;
+  const activeData = props.data || props.windProfileData || props.windProfile || props.profileData;
 
-  if (!activeData || activeData.length === 0) return null;
+  if (!activeData || !Array.isArray(activeData) || activeData.length === 0) return null;
 
   return (
     <div className="w-full bg-slate-900 border-t border-slate-700">

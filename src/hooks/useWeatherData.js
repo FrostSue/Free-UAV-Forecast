@@ -13,25 +13,6 @@ const useWeatherData = () => {
       setLoading(true);
       setError(null);
 
-      let realKpIndex = 1.5;
-      try {
-        const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json');
-        const kpRes = await fetch(proxyUrl);
-        if (kpRes.ok) {
-          const kpData = await kpRes.json();
-          if (kpData && kpData.length > 1) {
-            for (let i = kpData.length - 1; i > 0; i--) {
-              const val = parseFloat(kpData[i][1]);
-              if (!isNaN(val)) {
-                realKpIndex = val;
-                break;
-              }
-            }
-          }
-        }
-      } catch (e) {
-      }
-      
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,pressure_msl,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,precipitation,rain,showers,snowfall,snow_depth,weather_code,pressure_msl,surface_pressure,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,evapotranspiration,et0_fao_evapotranspiration,vapour_pressure_deficit,wind_speed_10m,wind_speed_80m,wind_speed_120m,wind_speed_180m,wind_direction_10m,wind_direction_80m,wind_direction_120m,wind_direction_180m,wind_gusts_10m,temperature_80m,temperature_120m,temperature_180m&timezone=auto`;
       
       const response = await fetch(url);
@@ -63,13 +44,11 @@ const useWeatherData = () => {
       const visKm = (visMeters / 1000).toFixed(1);
       const visMiles = (visMeters / 1609.34).toFixed(1);
 
-      const formattedKp = Number(realKpIndex.toFixed(1));
-
       const formattedData = {
         current: {
           weatherCode: current.weather_code,
-          sunrise: "05:15",
-          sunset: "20:00",
+          sunrise: "05:15", 
+          sunset: "20:00", 
           temperature: current.temperature_2m,
           dewPoint: hourly.dew_point_2m[nowIndex],
           windSpeed: current.wind_speed_10m,
@@ -79,9 +58,9 @@ const useWeatherData = () => {
           cloudCover: current.cloud_cover,
           visibilityKm: visKm,
           visibilityMiles: visMiles,
-          visibleSats: 22,
-          kpIndex: formattedKp,
-          satsLocked: 20
+          visibleSats: 22, 
+          kpIndex: 1.5, 
+          satsLocked: 20 
         },
         hourlyForecast: hourlySlice.map((timeStr, index) => {
           const i = nowIndex + index;
@@ -90,7 +69,7 @@ const useWeatherData = () => {
             temperature: hourly.temperature_2m[i],
             precipProb: hourly.precipitation_probability[i],
             cloudCover: hourly.cloud_cover[i],
-            kpIndex: formattedKp,
+            kpIndex: 1.5,
             isGoodToFly: hourly.wind_gusts_10m[i] < 25 && hourly.precipitation_probability[i] < 20
           };
         }),

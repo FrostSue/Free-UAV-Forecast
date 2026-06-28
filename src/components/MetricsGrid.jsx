@@ -1,5 +1,13 @@
 import { locales } from '../utils/locales';
 
+const getWindDirText = (degree, lang) => {
+  const dirsEN = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+  const dirsTR = ['K', 'KD', 'D', 'GD', 'G', 'GB', 'B', 'KB'];
+  const dirs = lang === 'tr' ? dirsTR : dirsEN;
+  const index = Math.round((degree % 360) / 45);
+  return `${degree}° ${dirs[index % 8]}`;
+};
+
 const MetricsGrid = ({ data, language }) => {
   const t = locales[language];
 
@@ -22,7 +30,7 @@ const MetricsGrid = ({ data, language }) => {
       {renderCard(t.temperature, `${data.temperature}°C`, `${t.dewPoint}: ${data.dewPoint}°C`)}
       {renderCard(t.wind, `${data.windSpeed} ${t.kmh}`, t.alt5000)}
       {renderCard(t.gusts, `${data.windGusts} ${t.kmh}`, t.alt5000)}
-      {renderCard(t.windDir, data.windDir)}
+      {renderCard(t.windDir, getWindDirText(data.windDirDegree, language))}
       {renderCard(t.precipProb, `${data.precipProb}%`)}
       {renderCard(t.cloudCover, `${data.cloudCover}%`)}
       {renderCard(t.visibility, `${data.visibility} ${t.miles}`)}

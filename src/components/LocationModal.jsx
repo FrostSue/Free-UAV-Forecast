@@ -1,6 +1,14 @@
-import { useState } from 'react';
-import { MapContainer, TileLayer, useMapEvents } from 'react-leaflet';
+import { useState, useEffect } from 'react';
+import { MapContainer, TileLayer, useMapEvents, useMap } from 'react-leaflet';
 import { locales } from '../utils/locales';
+
+const MapUpdater = ({ center }) => {
+  const map = useMap();
+  useEffect(() => {
+    map.setView(center, map.getZoom(), { animate: true });
+  }, [center, map]);
+  return null;
+};
 
 const LocationModal = ({ isOpen, onClose, onSelect, language }) => {
   const t = locales[language];
@@ -8,19 +16,24 @@ const LocationModal = ({ isOpen, onClose, onSelect, language }) => {
   const [inputLat, setInputLat] = useState('');
   const [inputLng, setInputLng] = useState('');
   const [mapCenter, setMapCenter] = useState([39.75, 37.01]);
+  const [customName, setCustomName] = useState(null);
+
+  useEffect(() => {
+    setInputLat(mapCenter[0].toFixed(4));
+    setInputLng(mapCenter[1].toFixed(4));
+  }, [mapCenter]);
 
   if (!isOpen) return null;
 
   const handleSearch = async () => {
     if (!searchQuery) return;
     try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${searchQuery}`);
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${searchQuery}&accept-language=tr`);
       const data = await res.json();
       if (data && data.length > 0) {
-        const lat = parseFloat(data[0].lat);
-        const lon = parseFloat(data[0].lon);
-        onSelect(lat, lon);
-        onClose();
+        setMapCenter([parseFloat(data[0].lat), parseFloat(data[0].lon)]);
+        const cleanName = data[0].display_name.split(',')[0];
+        setCustomName(cleanName);
       }
     } catch (err) {
       console.error(err);
@@ -31,8 +44,8 @@ const LocationModal = ({ isOpen, onClose, onSelect, language }) => {
     const lat = parseFloat(inputLat);
     const lng = parseFloat(inputLng);
     if (!isNaN(lat) && !isNaN(lng)) {
-      onSelect(lat, lng);
-      onClose();
+      setMapCenter([lat, lng]);
+      setCustomName(null); 
     }
   };
 
@@ -40,9 +53,15 @@ const LocationModal = ({ isOpen, onClose, onSelect, language }) => {
     useMapEvents({
       click(e) {
         setMapCenter([e.latlng.lat, e.latlng.lng]);
+        setCustomName(null); 
       }
     });
     return null;
+  };
+
+  const handleConfirm = () => {
+    onSelect(mapCenter[0], mapCenter[1], customName);
+    onClose();
   };
 
   return (
@@ -63,6 +82,7 @@ const LocationModal = ({ isOpen, onClose, onSelect, language }) => {
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t.searchLocation}
               className="flex-1 bg-slate-800 text-white px-3 py-2 rounded border border-slate-700 focus:outline-none focus:border-emerald-500"
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             />
             <button onClick={handleSearch} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded transition-colors">
               {t.search}
@@ -90,8 +110,9 @@ const LocationModal = ({ isOpen, onClose, onSelect, language }) => {
           </div>
 
           <div className="relative h-64 w-full rounded border border-slate-700 overflow-hidden mb-4">
-            <MapContainer center={mapCenter} zoom={6} className="h-full w-full">
+            <MapContainer center={mapCenter} zoom={8} className="h-full w-full">
               <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
+              <MapUpdater center={mapCenter} />
               <MapClickHandler />
             </MapContainer>
             <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-[1000]">
@@ -100,13 +121,10 @@ const LocationModal = ({ isOpen, onClose, onSelect, language }) => {
           </div>
           
           <button
-            onClick={() => {
-              onSelect(mapCenter[0], mapCenter[1]);
-              onClose();
-            }}
+            onClick={handleConfirm}
             className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded font-semibold transition-colors"
           >
-            {t.selectOnMap}
+            {t.confirmLocation}
           </button>
         </div>
       </div>

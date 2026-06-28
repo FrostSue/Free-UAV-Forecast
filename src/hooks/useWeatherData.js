@@ -6,7 +6,7 @@ const useWeatherData = () => {
   const [locationName, setLocationName] = useState("");
   const [weatherData, setWeatherData] = useState(null);
 
-  const fetchWeather = async (lat, lon) => {
+  const fetchWeather = async (lat, lon, customName = null) => {
     try {
       setLoading(true);
       setError(null);
@@ -64,8 +64,22 @@ const useWeatherData = () => {
         isGoodToFly: current.wind_gusts_10m < 25 && hourly.precipitation_probability[nowIndex] < 20
       };
 
+      let finalName = customName;
+      
+      if (!finalName) {
+        try {
+          const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=tr`);
+          const geoData = await geoRes.json();
+          if (geoData && geoData.address) {
+            finalName = geoData.address.city || geoData.address.town || geoData.address.village || geoData.address.county || geoData.name;
+          }
+        } catch (e) {
+          console.warn("Tersine geocoding başarısız oldu.");
+        }
+      }
+
       setWeatherData(formattedData);
-      setLocationName(`${lat.toFixed(4)}, ${lon.toFixed(4)}`);
+      setLocationName(finalName || `${lat.toFixed(4)}, ${lon.toFixed(4)}`);
       setLoading(false);
     } catch (err) {
       setError("API hatası: Veriler çekilemedi.");

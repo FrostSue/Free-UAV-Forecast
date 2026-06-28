@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, useMapEvents, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, useMapEvents, useMap, CircleMarker } from 'react-leaflet';
 import { locales } from '../utils/locales';
 
 const MapUpdater = ({ center }) => {
@@ -40,12 +40,26 @@ const LocationModal = ({ isOpen, onClose, onSelect, language }) => {
     }
   };
 
+  const handleAutoLocation = () => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setMapCenter([position.coords.latitude, position.coords.longitude]);
+          setCustomName(null);
+        },
+        (err) => {
+          console.warn("Konum alınamadı.", err);
+        }
+      );
+    }
+  };
+
   const handleManualSubmit = () => {
     const lat = parseFloat(inputLat);
     const lng = parseFloat(inputLng);
     if (!isNaN(lat) && !isNaN(lng)) {
       setMapCenter([lat, lng]);
-      setCustomName(null); 
+      setCustomName(null);
     }
   };
 
@@ -53,7 +67,7 @@ const LocationModal = ({ isOpen, onClose, onSelect, language }) => {
     useMapEvents({
       click(e) {
         setMapCenter([e.latlng.lat, e.latlng.lng]);
-        setCustomName(null); 
+        setCustomName(null);
       }
     });
     return null;
@@ -90,6 +104,9 @@ const LocationModal = ({ isOpen, onClose, onSelect, language }) => {
           </div>
 
           <div className="flex gap-2 mb-6">
+            <button onClick={handleAutoLocation} title={t.myLocation} className="bg-slate-800 text-white px-3 py-2 rounded border border-slate-700 hover:bg-slate-700 transition-colors">
+              📍
+            </button>
             <input
               type="number"
               value={inputLat}
@@ -110,14 +127,16 @@ const LocationModal = ({ isOpen, onClose, onSelect, language }) => {
           </div>
 
           <div className="relative h-64 w-full rounded border border-slate-700 overflow-hidden mb-4">
-            <MapContainer center={mapCenter} zoom={8} className="h-full w-full">
+            <MapContainer center={mapCenter} zoom={10} className="h-full w-full">
               <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
               <MapUpdater center={mapCenter} />
               <MapClickHandler />
+              <CircleMarker
+                center={mapCenter}
+                radius={8}
+                pathOptions={{ color: '#10b981', fillColor: '#10b981', fillOpacity: 0.8, weight: 2 }}
+              />
             </MapContainer>
-            <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-[1000]">
-              <div className="w-4 h-4 rounded-full border-2 border-emerald-500 bg-emerald-500/30"></div>
-            </div>
           </div>
           
           <button

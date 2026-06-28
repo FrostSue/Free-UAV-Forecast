@@ -20,9 +20,12 @@ export const locales = {
     kpIndex: "Kp İndeksi",
     satsLocked: "Kilitlenen Uydu",
     alt5000: "maks 1500+ m",
-    ground: "yer",
+    alt20m: "20m",
+    alt40m: "40m",
+    alt60m: "60m",
     alt80m: "80m",
     alt120m: "120m",
+    alt150m: "150m",
     alt180m: "180m",
     hourlyForecast: "Saatlik Tahmin",
     windProfile: "Rüzgar Profili",
@@ -46,7 +49,8 @@ export const locales = {
     selectOnMap: "Haritadaki Konumu Seç",
     confirmLocation: "Konumu Onayla",
     close: "Kapat",
-    locationPickerTitle: "Uçuş Konumu Seçin"
+    locationPickerTitle: "Uçuş Konumu Seçin",
+    myLocation: "Konumumu Bul"
   },
   en: {
     title: "UAV Forecast",
@@ -69,10 +73,13 @@ export const locales = {
     kpIndex: "Kp",
     satsLocked: "Sats Locked",
     alt5000: "max 5000+ ft",
-    ground: "ground",
-    alt80m: "260ft",
-    alt120m: "400ft",
-    alt180m: "600ft",
+    alt20m: "20m (65ft)",
+    alt40m: "40m (130ft)",
+    alt60m: "60m (200ft)",
+    alt80m: "80m (260ft)",
+    alt120m: "120m (400ft)",
+    alt150m: "150m (500ft)",
+    alt180m: "180m (600ft)",
     hourlyForecast: "Hourly Forecast",
     windProfile: "Wind Profile",
     updateLocation: "Update Location",
@@ -95,6 +102,7 @@ export const locales = {
     selectOnMap: "Select Location on Map",
     confirmLocation: "Confirm Location",
     close: "Close",
-    locationPickerTitle: "Select Flight Location"
+    locationPickerTitle: "Select Flight Location",
+    myLocation: "Find My Location"
   }
 };

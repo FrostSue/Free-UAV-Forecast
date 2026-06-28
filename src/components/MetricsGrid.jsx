@@ -33,7 +33,7 @@ const MetricsGrid = ({ data, language }) => {
       {renderCard(t.windDir, getWindDirText(data.windDirDegree, language))}
       {renderCard(t.precipProb, `${data.precipProb}%`)}
       {renderCard(t.cloudCover, `${data.cloudCover}%`)}
-      {renderCard(t.visibility, `${data.visibility} ${t.miles}`)}
+      {renderCard(t.visibility, `${language === 'tr' ? data.visibilityKm : data.visibilityMiles} ${t.visibilityUnit}`)}
       {renderCard(t.visibleSats, data.visibleSats)}
       {renderCard(t.kpIndex, data.kpIndex)}
       {renderCard(t.satsLocked, data.satsLocked)}

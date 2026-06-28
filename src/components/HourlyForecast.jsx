@@ -13,6 +13,7 @@ const HourlyForecast = ({ hourlyData, language }) => {
       <table className="w-full text-sm text-center text-slate-300">
         <thead className="text-xs text-slate-400 bg-slate-900 uppercase">
           <tr>
+            <th className="px-2 py-3 border-r border-slate-700 font-medium">{t.date}</th>
             <th className="px-2 py-3 border-r border-slate-700 font-medium">{t.time}</th>
             <th className="px-2 py-3 border-r border-slate-700 font-medium">{t.gusts}</th>
             <th className="px-2 py-3 border-r border-slate-700 font-medium">{t.temperature}</th>
@@ -24,9 +25,15 @@ const HourlyForecast = ({ hourlyData, language }) => {
         </thead>
         <tbody>
           {hourlyData.map((hour, index) => {
-            const timeFormatted = new Date(hour.time).toLocaleTimeString(language === 'tr' ? 'tr-TR' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+            const dateObj = new Date(hour.time);
+            const day = dateObj.getDate().toString().padStart(2, '0');
+            const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+            const dateFormatted = `${day}/${month}`;
+            const timeFormatted = dateObj.toLocaleTimeString(language === 'tr' ? 'tr-TR' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+            
             return (
               <tr key={index} className="border-b border-slate-800 hover:bg-slate-800/50 transition-colors">
+                <td className="px-2 py-2 border-r border-slate-700 text-slate-400">{dateFormatted}</td>
                 <td className="px-2 py-2 border-r border-slate-700 text-white">{timeFormatted}</td>
                 <td className="px-2 py-2 border-r border-slate-700">{hour.gusts}</td>
                 <td className="px-2 py-2 border-r border-slate-700">{hour.temperature}°C</td>

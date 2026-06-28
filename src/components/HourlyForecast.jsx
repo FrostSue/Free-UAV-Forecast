@@ -15,7 +15,6 @@ const HourlyForecast = ({ hourlyData, language }) => {
           <tr>
             <th className="px-2 py-3 border-r border-slate-700 font-medium">{t.date}</th>
             <th className="px-2 py-3 border-r border-slate-700 font-medium">{t.time}</th>
-            <th className="px-2 py-3 border-r border-slate-700 font-medium">{t.gusts}</th>
             <th className="px-2 py-3 border-r border-slate-700 font-medium">{t.temperature}</th>
             <th className="px-2 py-3 border-r border-slate-700 font-medium">{t.precipProb}</th>
             <th className="px-2 py-3 border-r border-slate-700 font-medium">{t.cloudCover}</th>
@@ -35,7 +34,6 @@ const HourlyForecast = ({ hourlyData, language }) => {
               <tr key={index} className="border-b border-slate-800 hover:bg-slate-800/50 transition-colors">
                 <td className="px-2 py-2 border-r border-slate-700 text-slate-400">{dateFormatted}</td>
                 <td className="px-2 py-2 border-r border-slate-700 text-white">{timeFormatted}</td>
-                <td className="px-2 py-2 border-r border-slate-700">{hour.gusts}</td>
                 <td className="px-2 py-2 border-r border-slate-700">{hour.temperature}°C</td>
                 <td className="px-2 py-2 border-r border-slate-700">{hour.precipProb}%</td>
                 <td className="px-2 py-2 border-r border-slate-700">{hour.cloudCover}%</td>

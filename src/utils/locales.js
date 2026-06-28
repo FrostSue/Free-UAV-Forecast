@@ -31,12 +31,21 @@ export const locales = {
     miles: "mil",
     kmh: "km/h",
     time: "Saat",
+    date: "Tarih",
     fly: "Uçuş?",
     yes: "evet",
     no: "hayır",
     altitudeAgl: "İrtifa (AGL)",
     windSpeedProfile: "Rüzgar Hızı",
-    gustSpeedProfile: "Hamle Hızı"
+    gustSpeedProfile: "Hamle Hızı",
+    searchLocation: "Şehir veya bölge ara...",
+    search: "Ara",
+    latitude: "Enlem",
+    longitude: "Boylam",
+    applyCoordinates: "Koordinata Git",
+    selectOnMap: "Haritadaki Konumu Seç",
+    close: "Kapat",
+    locationPickerTitle: "Uçuş Konumu Seçin"
   },
   en: {
     title: "UAV Forecast",
@@ -70,11 +79,20 @@ export const locales = {
     miles: "miles",
     kmh: "km/h",
     time: "Time",
+    date: "Date",
     fly: "Fly?",
     yes: "yes",
     no: "no",
     altitudeAgl: "Altitude AGL",
     windSpeedProfile: "Wind Speed",
-    gustSpeedProfile: "Gust Speed"
+    gustSpeedProfile: "Gust Speed",
+    searchLocation: "Search city or region...",
+    search: "Search",
+    latitude: "Latitude",
+    longitude: "Longitude",
+    applyCoordinates: "Go to Coordinates",
+    selectOnMap: "Select Location on Map",
+    close: "Close",
+    locationPickerTitle: "Select Flight Location"
   }
 };

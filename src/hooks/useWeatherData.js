@@ -15,23 +15,21 @@ const useWeatherData = () => {
 
       let realKpIndex = 1.5;
       try {
-        const now = new Date();
-        const past = new Date(now.getTime() - 24 * 60 * 60 * 1000); 
-        const startStr = past.toISOString().split('.')[0] + 'Z';
-        const endStr = now.toISOString().split('.')[0] + 'Z';
-        
-        const kpRes = await fetch(`https://kp.gfz.de/app/json/?start=${startStr}&end=${endStr}&index=Kp`);
+        const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json');
+        const kpRes = await fetch(proxyUrl);
         if (kpRes.ok) {
           const kpData = await kpRes.json();
-          if (kpData && kpData.Kp && kpData.Kp.length > 0) {
-            const validKpValues = kpData.Kp.filter(val => val !== null && !isNaN(val));
-            if (validKpValues.length > 0) {
-              realKpIndex = validKpValues[validKpValues.length - 1];
+          if (kpData && kpData.length > 1) {
+            for (let i = kpData.length - 1; i > 0; i--) {
+              const val = parseFloat(kpData[i][1]);
+              if (!isNaN(val)) {
+                realKpIndex = val;
+                break;
+              }
             }
           }
         }
       } catch (e) {
-        console.warn("GFZ Kp İndeksi çekilemedi:", e);
       }
       
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,pressure_msl,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,precipitation,rain,showers,snowfall,snow_depth,weather_code,pressure_msl,surface_pressure,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,evapotranspiration,et0_fao_evapotranspiration,vapour_pressure_deficit,wind_speed_10m,wind_speed_80m,wind_speed_120m,wind_speed_180m,wind_direction_10m,wind_direction_80m,wind_direction_120m,wind_direction_180m,wind_gusts_10m,temperature_80m,temperature_120m,temperature_180m&timezone=auto`;
@@ -70,8 +68,8 @@ const useWeatherData = () => {
       const formattedData = {
         current: {
           weatherCode: current.weather_code,
-          sunrise: "05:15", 
-          sunset: "20:00", 
+          sunrise: "05:15",
+          sunset: "20:00",
           temperature: current.temperature_2m,
           dewPoint: hourly.dew_point_2m[nowIndex],
           windSpeed: current.wind_speed_10m,
@@ -81,9 +79,9 @@ const useWeatherData = () => {
           cloudCover: current.cloud_cover,
           visibilityKm: visKm,
           visibilityMiles: visMiles,
-          visibleSats: 22, 
-          kpIndex: formattedKp, 
-          satsLocked: 20 
+          visibleSats: 22,
+          kpIndex: formattedKp,
+          satsLocked: 20
         },
         hourlyForecast: hourlySlice.map((timeStr, index) => {
           const i = nowIndex + index;
@@ -121,7 +119,6 @@ const useWeatherData = () => {
             finalName = geoData.address.city || geoData.address.town || geoData.address.village || geoData.address.county || geoData.name;
           }
         } catch (e) {
-          console.warn(e);
         }
       }
 

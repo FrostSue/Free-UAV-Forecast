@@ -49,9 +49,9 @@ const useWeatherData = () => {
         })),
         windProfile: [
           { altitude: 'ground', windSpeed: current.wind_speed_10m, gustSpeed: current.wind_gusts_10m, temperature: current.temperature_2m },
-          { altitude: '260ft', windSpeed: hourly.wind_speed_80m[nowIndex], gustSpeed: hourly.wind_gusts_10m[nowIndex] * 1.2, temperature: hourly.temperature_80m[nowIndex] },
-          { altitude: '400ft', windSpeed: hourly.wind_speed_120m[nowIndex], gustSpeed: hourly.wind_gusts_10m[nowIndex] * 1.3, temperature: hourly.temperature_120m[nowIndex] },
-          { altitude: '600ft', windSpeed: hourly.wind_speed_180m[nowIndex], gustSpeed: hourly.wind_gusts_10m[nowIndex] * 1.5, temperature: hourly.temperature_180m[nowIndex] }
+          { altitude: '260ft', windSpeed: hourly.wind_speed_80m[nowIndex], gustSpeed: (hourly.wind_gusts_10m[nowIndex] * 1.2).toFixed(1), temperature: hourly.temperature_80m[nowIndex] },
+          { altitude: '400ft', windSpeed: hourly.wind_speed_120m[nowIndex], gustSpeed: (hourly.wind_gusts_10m[nowIndex] * 1.3).toFixed(1), temperature: hourly.temperature_120m[nowIndex] },
+          { altitude: '600ft', windSpeed: hourly.wind_speed_180m[nowIndex], gustSpeed: (hourly.wind_gusts_10m[nowIndex] * 1.5).toFixed(1), temperature: hourly.temperature_180m[nowIndex] }
         ],
         isGoodToFly: current.wind_gusts_10m < 25 && hourly.precipitation_probability[nowIndex] < 20
       };

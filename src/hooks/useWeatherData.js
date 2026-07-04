@@ -8,10 +8,10 @@ const useWeatherData = () => {
 
   const lerp = (x, x0, x1, y0, y1) => y0 + ((x - x0) / (x1 - x0)) * (y1 - y0);
 
-  const formatTime = (isoString) => {
+  const formatTimeData = (isoString) => {
     if (!isoString) return "--:--";
-    const date = new Date(isoString);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const dateObj = new Date(isoString);
+    return dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   const fetchWeather = async (lat, lon, customName = null) => {
@@ -29,8 +29,8 @@ const useWeatherData = () => {
       const hourly = data.hourly;
       const daily = data.daily;
       
-      const nowIndexTime = new Date();
-      let nowIndex = hourly.time.findIndex(timeStr => new Date(timeStr) > nowIndexTime) - 1;
+      const currentTimeDate = new Date();
+      let nowIndex = hourly.time.findIndex(timeStr => new Date(timeStr) > currentTimeDate) - 1;
       if (nowIndex < 0) nowIndex = 0;
 
       const hourlySlice = hourly.time.slice(nowIndex, nowIndex + 72);
@@ -54,10 +54,10 @@ const useWeatherData = () => {
       const dynamicVisibleSats = Math.max(8, Math.floor(24 - (current.cloud_cover / 8)));
       const dynamicLockedSats = Math.max(4, dynamicVisibleSats - (Math.floor(Math.random() * 3) + 1));
 
-      const sunriseTime = daily?.sunrise?.[0] ? formatTime(daily.sunrise[0]) : "--:--";
-      const sunsetTime = daily?.sunset?.[0] ? formatTime(daily.sunset[0]) : "--:--";
+      const sunriseTime = daily?.sunrise?.[0] ? formatTimeData(daily.sunrise[0]) : "--:--";
+      const sunsetTime = daily?.sunset?.[0] ? formatTimeData(daily.sunset[0]) : "--:--";
 
-      const formattedData = {
+      const processedData = {
         current: {
           weatherCode: current.weather_code,
           sunrise: sunriseTime, 
@@ -103,21 +103,21 @@ const useWeatherData = () => {
         isGoodToFly: current.wind_gusts_10m < 25 && hourly.precipitation_probability[nowIndex] < 20
       };
 
-      let finalName = customName;
+      let finalLocationName = customName;
       
-      if (!finalName) {
+      if (!finalLocationName) {
         try {
           const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=tr`);
           const geoData = await geoRes.json();
           if (geoData && geoData.address) {
-            finalName = geoData.address.city || geoData.address.town || geoData.address.village || geoData.address.county || geoData.name;
+            finalLocationName = geoData.address.city || geoData.address.town || geoData.address.village || geoData.address.county || geoData.name;
           }
         } catch (e) {
         }
       }
 
-      setWeatherData(formattedData);
-      setLocationName(finalName || `${lat.toFixed(4)}, ${lon.toFixed(4)}`);
+      setWeatherData(processedData);
+      setLocationName(finalLocationName || `${lat.toFixed(4)}, ${lon.toFixed(4)}`);
       setLoading(false);
     } catch (err) {
       setError("API hatası: Veriler çekilemedi.");

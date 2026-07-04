@@ -31,7 +31,7 @@ const HourlyForecast = ({ data, hourlyData, language }) => {
   };
 
   return (
-    <div className="w-full bg-slate-900 border-t border-slate-700 mt-2">
+    <div className="w-full bg-slate-900 border-t border-slate-700 mt-3">
       <div className="bg-slate-800 text-slate-200 text-sm font-semibold p-2 border-b border-slate-700 text-center">
         {t.hourlyForecast}
       </div>

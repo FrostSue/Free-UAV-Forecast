@@ -19,7 +19,7 @@ const Header = ({ language, setLanguage, locationName, onOpenModal, lastUpdateTi
     : time.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
 
   return (
-    <header className="flex flex-col bg-slate-900 text-white border-b border-slate-700 shadow-md">
+    <header className="flex flex-col bg-slate-900 text-white border-b border-slate-700 shadow-lg">
       <div className="flex flex-col md:flex-row justify-between items-center p-4">
         <div className="flex items-center space-x-4 mb-4 md:mb-0">
           <h1 className="text-xl font-bold tracking-wide text-slate-100">{t.title}</h1>

@@ -61,7 +61,8 @@ export const locales = {
     exportJson: "JSON Dışa Aktar",
     day1: "1 Günlük",
     day2: "2 Günlük",
-    day3: "3 Günlük"
+    day3: "3 Günlük",
+    refresh: "Yenile"
   },
   en: {
     title: "UAV Forecast",
@@ -125,6 +126,7 @@ export const locales = {
     exportJson: "Export JSON",
     day1: "1 Day",
     day2: "2 Days",
-    day3: "3 Days"
+    day3: "3 Days",
+    refresh: "Refresh"
   }
 };

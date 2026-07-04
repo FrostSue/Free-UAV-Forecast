@@ -8,12 +8,18 @@ const useWeatherData = () => {
 
   const lerp = (x, x0, x1, y0, y1) => y0 + ((x - x0) / (x1 - x0)) * (y1 - y0);
 
+  const formatTime = (isoString) => {
+    if (!isoString) return "--:--";
+    const date = new Date(isoString);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
   const fetchWeather = async (lat, lon, customName = null) => {
     try {
       setLoading(true);
       setError(null);
 
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,pressure_msl,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,precipitation,rain,showers,snowfall,snow_depth,weather_code,pressure_msl,surface_pressure,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,evapotranspiration,et0_fao_evapotranspiration,vapour_pressure_deficit,wind_speed_10m,wind_speed_80m,wind_speed_120m,wind_speed_180m,wind_direction_10m,wind_direction_80m,wind_direction_120m,wind_direction_180m,wind_gusts_10m,temperature_80m,temperature_120m,temperature_180m&timezone=auto`;
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,pressure_msl,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,precipitation,rain,showers,snowfall,snow_depth,weather_code,pressure_msl,surface_pressure,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,evapotranspiration,et0_fao_evapotranspiration,vapour_pressure_deficit,wind_speed_10m,wind_speed_80m,wind_speed_120m,wind_speed_180m,wind_direction_10m,wind_direction_80m,wind_direction_120m,wind_direction_180m,wind_gusts_10m,temperature_80m,temperature_120m,temperature_180m&daily=sunrise,sunset&timezone=auto`;
       
       const response = await fetch(url);
       if (!response.ok) throw new Error('Network response was not ok');
@@ -21,6 +27,7 @@ const useWeatherData = () => {
 
       const current = data.current;
       const hourly = data.hourly;
+      const daily = data.daily;
       
       const nowIndexTime = new Date();
       let nowIndex = hourly.time.findIndex(timeStr => new Date(timeStr) > nowIndexTime) - 1;
@@ -44,11 +51,17 @@ const useWeatherData = () => {
       const visKm = (visMeters / 1000).toFixed(1);
       const visMiles = (visMeters / 1609.34).toFixed(1);
 
+      const dynamicVisibleSats = Math.max(8, Math.floor(24 - (current.cloud_cover / 8)));
+      const dynamicLockedSats = Math.max(4, dynamicVisibleSats - (Math.floor(Math.random() * 3) + 1));
+
+      const sunriseTime = daily?.sunrise?.[0] ? formatTime(daily.sunrise[0]) : "--:--";
+      const sunsetTime = daily?.sunset?.[0] ? formatTime(daily.sunset[0]) : "--:--";
+
       const formattedData = {
         current: {
           weatherCode: current.weather_code,
-          sunrise: "05:15", 
-          sunset: "20:00", 
+          sunrise: sunriseTime, 
+          sunset: sunsetTime, 
           temperature: current.temperature_2m,
           dewPoint: hourly.dew_point_2m[nowIndex],
           windSpeed: current.wind_speed_10m,
@@ -58,9 +71,9 @@ const useWeatherData = () => {
           cloudCover: current.cloud_cover,
           visibilityKm: visKm,
           visibilityMiles: visMiles,
-          visibleSats: 22, 
+          visibleSats: dynamicVisibleSats, 
           kpIndex: 1.5, 
-          satsLocked: 20 
+          satsLocked: dynamicLockedSats 
         },
         hourlyForecast: hourlySlice.map((timeStr, index) => {
           const i = nowIndex + index;
@@ -69,6 +82,8 @@ const useWeatherData = () => {
             temperature: hourly.temperature_2m[i],
             precipProb: hourly.precipitation_probability[i],
             cloudCover: hourly.cloud_cover[i],
+            windSpeed: hourly.wind_speed_10m[i],
+            windGusts: hourly.wind_gusts_10m[i],
             kpIndex: 1.5,
             isGoodToFly: hourly.wind_gusts_10m[i] < 25 && hourly.precipitation_probability[i] < 20
           };

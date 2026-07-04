@@ -4,15 +4,17 @@
 
 @layer utilities {
   .custom-scrollbar::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
+    width: 8px;
+    height: 8px;
   }
   .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
+    background: #0f172a;
+    border-radius: 8px;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
     background: #334155;
-    border-radius: 10px;
+    border-radius: 8px;
+    border: 2px solid #0f172a;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: #475569;
@@ -23,4 +25,7 @@ body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #020617;
+  background-image: radial-gradient(circle at 50% 0%, #0f172a 0%, #020617 70%);
+  background-attachment: fixed;
 }

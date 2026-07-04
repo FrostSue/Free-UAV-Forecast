@@ -128,7 +128,10 @@ const LocationModal = ({ isOpen, onClose, onSelect, language }) => {
 
           <div className="relative h-64 w-full rounded border border-slate-700 overflow-hidden mb-4">
             <MapContainer center={mapCenter} zoom={10} className="h-full w-full">
-              <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
+              <TileLayer 
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              />
               <MapUpdater center={mapCenter} />
               <MapClickHandler />
               <CircleMarker

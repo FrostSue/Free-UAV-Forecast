@@ -13,7 +13,7 @@ const App = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [lastUpdateTime, setLastUpdateTime] = useState(null);
   const { loading, error, locationName, weatherData, fetchWeather } = useWeatherData();
-  const t = locales[language];
+  const t = locales[language] || locales['tr'];
 
   useEffect(() => {
     if (weatherData) {
@@ -22,8 +22,8 @@ const App = () => {
   }, [weatherData]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-emerald-500 selection:text-white">
-      <div className="max-w-md mx-auto bg-slate-900 min-h-screen shadow-2xl overflow-hidden flex flex-col border-x border-slate-800 relative">
+    <div className="min-h-screen bg-transparent text-slate-200 font-sans selection:bg-emerald-500 selection:text-white">
+      <div className="w-full max-w-3xl mx-auto bg-slate-900 min-h-screen shadow-2xl overflow-hidden flex flex-col border-x border-slate-800 relative">
         <Header
           language={language}
           setLanguage={setLanguage}
@@ -46,7 +46,7 @@ const App = () => {
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto pb-10 custom-scrollbar">
-            <FlightStatus isGoodToFly={weatherData.isGoodToFly} language={language} />
+            <FlightStatus data={weatherData.current} language={language} />
             <MetricsGrid data={weatherData.current} language={language} />
             <HourlyForecast hourlyData={weatherData.hourlyForecast} language={language} />
             <WindProfile profileData={weatherData.windProfile} language={language} />

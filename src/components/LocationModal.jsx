@@ -127,7 +127,7 @@ const LocationModal = ({ isOpen, onClose, onSelect, language }) => {
           </div>
 
           <div className="relative h-64 w-full rounded border border-slate-700 overflow-hidden mb-4">
-            <MapContainer center={mapCenter} zoom={10} className="h-full w-full">
+            <MapContainer center={mapCenter} zoom={11} className="h-full w-full">
               <TileLayer 
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -136,7 +136,7 @@ const LocationModal = ({ isOpen, onClose, onSelect, language }) => {
               <MapClickHandler />
               <CircleMarker
                 center={mapCenter}
-                radius={8}
+                radius={9}
                 pathOptions={{ color: '#10b981', fillColor: '#10b981', fillOpacity: 0.8, weight: 2 }}
               />
             </MapContainer>

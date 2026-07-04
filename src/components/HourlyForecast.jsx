@@ -56,17 +56,17 @@ const HourlyForecast = ({ data, hourlyData, language }) => {
         </button>
       </div>
 
-      <div className="w-full overflow-x-auto custom-scrollbar h-96">
-        <table className="w-full text-sm text-center text-slate-300 relative">
-          <thead className="text-xs text-slate-400 bg-slate-900 uppercase sticky top-0 z-10 shadow-md">
+      <div className="w-full overflow-x-auto custom-scrollbar">
+        <table className="w-full text-sm text-center text-slate-300">
+          <thead className="text-xs text-slate-400 bg-slate-900 uppercase border-b border-slate-700">
             <tr>
-              <th className="px-2 py-3 border-b border-r border-slate-700 font-medium">{t.date}</th>
-              <th className="px-2 py-3 border-b border-r border-slate-700 font-medium">{t.time}</th>
-              <th className="px-2 py-3 border-b border-r border-slate-700 font-medium">{t.temperature}</th>
-              <th className="px-2 py-3 border-b border-r border-slate-700 font-medium">{t.precipProb}</th>
-              <th className="px-2 py-3 border-b border-r border-slate-700 font-medium">{t.windGustCol}</th>
-              <th className="px-2 py-3 border-b border-r border-slate-700 font-medium">{t.cloudCover}</th>
-              <th className="px-2 py-3 border-b font-medium">{t.fly}</th>
+              <th className="px-2 py-3 border-r border-slate-700 font-medium">{t.date}</th>
+              <th className="px-2 py-3 border-r border-slate-700 font-medium">{t.time}</th>
+              <th className="px-2 py-3 border-r border-slate-700 font-medium">{t.temperature}</th>
+              <th className="px-2 py-3 border-r border-slate-700 font-medium">{t.precipProb}</th>
+              <th className="px-2 py-3 border-r border-slate-700 font-medium">{t.windGustCol}</th>
+              <th className="px-2 py-3 border-r border-slate-700 font-medium">{t.cloudCover}</th>
+              <th className="px-2 py-3 font-medium">{t.fly}</th>
             </tr>
           </thead>
           <tbody>

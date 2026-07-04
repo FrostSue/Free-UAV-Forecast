@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from './components/Header';
 import FlightStatus from './components/FlightStatus';
 import MetricsGrid from './components/MetricsGrid';
@@ -11,8 +11,15 @@ import { locales } from './utils/locales';
 const App = () => {
   const [language, setLanguage] = useState('tr');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [lastUpdateTime, setLastUpdateTime] = useState(null);
   const { loading, error, locationName, weatherData, fetchWeather } = useWeatherData();
   const t = locales[language];
+
+  useEffect(() => {
+    if (weatherData) {
+      setLastUpdateTime(new Date().toISOString());
+    }
+  }, [weatherData]);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-emerald-500 selection:text-white">
@@ -22,6 +29,7 @@ const App = () => {
           setLanguage={setLanguage}
           locationName={locationName || (loading ? t.loading : '')}
           onOpenModal={() => setIsModalOpen(true)}
+          lastUpdateTime={lastUpdateTime}
         />
 
         {error ? (

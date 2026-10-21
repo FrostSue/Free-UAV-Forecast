@@ -48,7 +48,7 @@ const MetricsGrid = ({ data, language }) => {
     badge = null,
     alert = 'normal',
     tooltip = null,
-    popPosition = 'down', // 'down' or 'up'
+    popPosition = 'down',
     alignRight = false
   }) => {
     const isTooltipOpen = activeTooltip === id;
@@ -73,23 +73,26 @@ const MetricsGrid = ({ data, language }) => {
           isTooltipOpen ? 'z-50 ring-2 ring-amber-400/50 shadow-2xl' : 'z-0 hover:-translate-y-0.5 hover:shadow-lg'
         } ${alertClasses}`}
       >
-        {/* Top Header */}
-        <div className="flex items-center justify-between gap-1 mb-2">
-          <div className="flex items-center gap-1.5 text-slate-400 text-xs font-semibold truncate">
+        {/* Top Header Row (NO 'truncate' on the parent container, so popover is never clipped!) */}
+        <div className="flex items-center justify-between gap-1 mb-2 relative">
+          <div className="flex items-center gap-1.5 text-slate-400 text-xs font-semibold min-w-0 flex-1">
             <span className="text-sm flex-shrink-0">{icon}</span>
             <span className="truncate">{title}</span>
+            
             {tooltip && (
-              <div className="relative inline-flex items-center">
+              <div className="relative inline-flex items-center flex-shrink-0">
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     setActiveTooltip(isTooltipOpen ? null : id);
                   }}
-                  className="w-4 h-4 rounded-full bg-slate-700 hover:bg-slate-600 text-amber-400 hover:text-amber-300 flex items-center justify-center ml-0.5 transition-colors focus:outline-none cursor-pointer flex-shrink-0"
+                  onMouseEnter={() => setActiveTooltip(id)}
+                  onMouseLeave={() => setActiveTooltip(null)}
+                  className="w-5 h-5 rounded-full bg-slate-700 hover:bg-slate-600 text-amber-400 hover:text-amber-300 flex items-center justify-center transition-all shadow-sm focus:outline-none cursor-pointer"
                   aria-label="Detay"
                 >
-                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="10" />
                     <line x1="12" y1="8" x2="12" y2="12" />
                     <line x1="12" y1="16" x2="12.01" y2="16" />
@@ -100,11 +103,13 @@ const MetricsGrid = ({ data, language }) => {
                 {isTooltipOpen && (
                   <div 
                     onClick={(e) => e.stopPropagation()}
+                    onMouseEnter={() => setActiveTooltip(id)}
+                    onMouseLeave={() => setActiveTooltip(null)}
                     className={`absolute ${
                       alignRight ? 'right-0 sm:-right-2' : 'left-0 sm:-left-2'
                     } ${
-                      popPosition === 'up' ? 'bottom-full mb-3' : 'top-full mt-3'
-                    } w-72 sm:w-80 max-w-[calc(100vw-2.5rem)] p-4 bg-slate-950 border-2 border-slate-700 rounded-2xl shadow-2xl shadow-black text-xs text-slate-100 z-50 animate-in fade-in zoom-in-95 duration-150`}
+                      popPosition === 'up' ? 'bottom-full mb-2.5' : 'top-full mt-2.5'
+                    } w-72 sm:w-80 max-w-[calc(100vw-3rem)] p-4 bg-slate-950 border-2 border-slate-700 rounded-2xl shadow-2xl shadow-black text-xs text-slate-100 z-50 animate-in fade-in zoom-in-95 duration-150`}
                   >
                     {/* Directional Pointer Arrow */}
                     <div 
@@ -142,6 +147,7 @@ const MetricsGrid = ({ data, language }) => {
               </div>
             )}
           </div>
+
           {badge && (
             <span className="text-[10px] px-1.5 py-0.5 rounded-md font-bold tracking-wider bg-slate-700/70 text-slate-300 border border-slate-600/50 flex-shrink-0">
               {badge}

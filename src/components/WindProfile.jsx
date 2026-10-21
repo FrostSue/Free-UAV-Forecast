@@ -20,43 +20,53 @@ const WindProfile = (props) => {
   return (
     <div className="p-4 md:p-5 pt-0">
       <div className="bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl overflow-hidden backdrop-blur-md">
-        {/* Title Bar with Interactive Info Button */}
-        <div className="p-4 bg-slate-850 border-b border-slate-800 flex items-center justify-between relative">
+        {/* Title Bar with Circular Exclamation Button */}
+        <div className="p-4 bg-slate-850 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <span className="text-lg">📈</span>
             <h3 className="font-bold text-white text-base md:text-lg tracking-tight">
               {t.windProfile}
             </h3>
             
-            {/* Interactive Info Popover Button */}
-            <div className="relative inline-block">
+            {/* Interactive Info Icon Button (Circle with Exclamation Mark) */}
+            <div className="relative inline-flex items-center">
               <button
                 type="button"
                 onClick={() => setShowTooltip(prev => !prev)}
                 onMouseEnter={() => setShowTooltip(true)}
                 onMouseLeave={() => setShowTooltip(false)}
-                className="w-5 h-5 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-emerald-500/60 text-slate-400 hover:text-emerald-400 flex items-center justify-center text-xs font-bold transition-all shadow-sm focus:outline-none"
+                className="w-5 h-5 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-amber-400/80 text-amber-400 flex items-center justify-center transition-all shadow-sm focus:outline-none cursor-pointer"
                 aria-label="Model Bilgisi"
-                title="Hesaplama Modeli Bilgisi"
               >
-                ℹ
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
               </button>
 
-              {/* Tooltip Card */}
+              {/* Tooltip Card (Aligned left-0 to extend to the open right side, no cutoff) */}
               {showTooltip && (
                 <div 
-                  className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-80 p-3.5 bg-slate-850/95 backdrop-blur-xl border border-slate-700/80 rounded-xl shadow-2xl text-xs text-slate-300 z-50 animate-in fade-in zoom-in-95 duration-150"
+                  className="absolute left-0 top-full mt-2.5 w-80 max-w-[calc(100vw-3rem)] p-4 bg-slate-900/98 backdrop-blur-xl border border-slate-700 rounded-xl shadow-2xl text-xs text-slate-200 z-50 animate-in fade-in zoom-in-95 duration-150"
                   onMouseEnter={() => setShowTooltip(true)}
                   onMouseLeave={() => setShowTooltip(false)}
                 >
-                  <div className="flex items-center gap-2 text-emerald-400 font-bold mb-1.5 pb-1 border-b border-slate-700/60">
-                    <span>🔬</span>
+                  {/* Upward pointer arrow */}
+                  <div className="absolute -top-1.5 left-2 w-3 h-3 bg-slate-900 border-t border-l border-slate-700 rotate-45 pointer-events-none"></div>
+
+                  <div className="flex items-center gap-2 text-amber-400 font-bold mb-2 pb-1.5 border-b border-slate-800">
+                    <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
                     <span>{t.windProfileTooltipTitle}</span>
                   </div>
-                  <p className="leading-relaxed text-slate-300 mb-2">
+                  <p className="leading-relaxed text-slate-300 mb-2.5">
                     {t.windProfileTooltipDesc}
                   </p>
-                  <div className="bg-slate-900/90 p-2 rounded-lg border border-slate-800 text-center font-mono text-emerald-300 font-semibold text-[11px]">
+                  <div className="bg-slate-950 p-2.5 rounded-lg border border-slate-800 text-center font-mono text-emerald-400 font-bold text-xs">
                     {t.windProfileFormula}
                   </div>
                 </div>

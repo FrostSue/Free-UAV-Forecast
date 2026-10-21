@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { locales } from '../utils/locales';
 
 const WindProfile = (props) => {
   const language = props.language || 'tr';
   const t = locales[language] || locales['tr'];
+  const [showTooltip, setShowTooltip] = useState(false);
   
   const activeData = props.data || props.windProfileData || props.windProfile || props.profileData;
 
@@ -18,17 +20,49 @@ const WindProfile = (props) => {
   return (
     <div className="p-4 md:p-5 pt-0">
       <div className="bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl overflow-hidden backdrop-blur-md">
-        {/* Title Bar */}
-        <div className="p-4 bg-slate-850 border-b border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        {/* Title Bar with Interactive Info Button */}
+        <div className="p-4 bg-slate-850 border-b border-slate-800 flex items-center justify-between relative">
+          <div className="flex items-center gap-2.5">
             <span className="text-lg">📈</span>
             <h3 className="font-bold text-white text-base md:text-lg tracking-tight">
               {t.windProfile}
             </h3>
+            
+            {/* Interactive Info Popover Button */}
+            <div className="relative inline-block">
+              <button
+                type="button"
+                onClick={() => setShowTooltip(prev => !prev)}
+                onMouseEnter={() => setShowTooltip(true)}
+                onMouseLeave={() => setShowTooltip(false)}
+                className="w-5 h-5 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-emerald-500/60 text-slate-400 hover:text-emerald-400 flex items-center justify-center text-xs font-bold transition-all shadow-sm focus:outline-none"
+                aria-label="Model Bilgisi"
+                title="Hesaplama Modeli Bilgisi"
+              >
+                ℹ
+              </button>
+
+              {/* Tooltip Card */}
+              {showTooltip && (
+                <div 
+                  className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-80 p-3.5 bg-slate-850/95 backdrop-blur-xl border border-slate-700/80 rounded-xl shadow-2xl text-xs text-slate-300 z-50 animate-in fade-in zoom-in-95 duration-150"
+                  onMouseEnter={() => setShowTooltip(true)}
+                  onMouseLeave={() => setShowTooltip(false)}
+                >
+                  <div className="flex items-center gap-2 text-emerald-400 font-bold mb-1.5 pb-1 border-b border-slate-700/60">
+                    <span>🔬</span>
+                    <span>{t.windProfileTooltipTitle}</span>
+                  </div>
+                  <p className="leading-relaxed text-slate-300 mb-2">
+                    {t.windProfileTooltipDesc}
+                  </p>
+                  <div className="bg-slate-900/90 p-2 rounded-lg border border-slate-800 text-center font-mono text-emerald-300 font-semibold text-[11px]">
+                    {t.windProfileFormula}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-          <span className="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
-            Hellmann Power-Law
-          </span>
         </div>
 
         {/* Profile Table */}

@@ -22,7 +22,7 @@ const MetricsGrid = ({ data, language }) => {
     );
   }
 
-  const renderCard = ({ id, icon, title, value, unit = '', subValue = null, badge = null, alert = 'normal', tooltip = null }) => {
+  const renderCard = ({ id, icon, title, value, unit = '', subValue = null, badge = null, alert = 'normal', tooltip = null, alignRight = false }) => {
     let alertClasses = 'bg-slate-800/60 border-slate-700/60 hover:border-slate-600';
     let textAccent = 'text-white';
 
@@ -47,20 +47,44 @@ const MetricsGrid = ({ data, language }) => {
             <span className="text-sm flex-shrink-0">{icon}</span>
             <span className="truncate">{title}</span>
             {tooltip && (
-              <button
-                type="button"
-                onClick={() => setActiveTooltip(isTooltipOpen ? null : id)}
-                onMouseEnter={() => setActiveTooltip(id)}
-                onMouseLeave={() => setActiveTooltip(null)}
-                className="w-4 h-4 rounded-full bg-slate-700/80 hover:bg-slate-600 text-amber-400 hover:text-amber-300 flex items-center justify-center ml-0.5 transition-colors focus:outline-none cursor-pointer flex-shrink-0"
-                aria-label="Detay"
-              >
-                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
-              </button>
+              <div className="relative inline-flex items-center">
+                <button
+                  type="button"
+                  onClick={() => setActiveTooltip(isTooltipOpen ? null : id)}
+                  onMouseEnter={() => setActiveTooltip(id)}
+                  onMouseLeave={() => setActiveTooltip(null)}
+                  className="w-4 h-4 rounded-full bg-slate-700 hover:bg-slate-600 text-amber-400 hover:text-amber-300 flex items-center justify-center ml-0.5 transition-colors focus:outline-none cursor-pointer flex-shrink-0"
+                  aria-label="Detay"
+                >
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg>
+                </button>
+
+                {/* 100% Solid Opaque Tooltip Popover (No Transparency Bleed) */}
+                {isTooltipOpen && (
+                  <div 
+                    className={`absolute ${alignRight ? 'right-0 sm:-right-2' : 'left-0 sm:-left-2'} top-full mt-2.5 w-72 sm:w-80 max-w-[calc(100vw-2.5rem)] p-4 bg-slate-950 border border-slate-700 rounded-xl shadow-2xl text-xs text-slate-100 z-50 animate-in fade-in duration-150`}
+                    onMouseEnter={() => setActiveTooltip(id)}
+                    onMouseLeave={() => setActiveTooltip(null)}
+                  >
+                    {/* Upward Solid Pointer Arrow */}
+                    <div className={`absolute -top-1.5 ${alignRight ? 'right-4' : 'left-4'} w-3 h-3 bg-slate-950 border-t border-l border-slate-700 rotate-45 pointer-events-none`}></div>
+
+                    <div className="font-bold text-amber-400 mb-1.5 flex items-center gap-1.5 pb-1 border-b border-slate-800">
+                      <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                      </svg>
+                      <span>{tooltip.title}</span>
+                    </div>
+                    <p className="leading-relaxed text-slate-200 text-[11px] font-normal">{tooltip.desc}</p>
+                  </div>
+                )}
+              </div>
             )}
           </div>
           {badge && (
@@ -69,25 +93,6 @@ const MetricsGrid = ({ data, language }) => {
             </span>
           )}
         </div>
-
-        {/* Hover / Tap Tooltip */}
-        {tooltip && isTooltipOpen && (
-          <div 
-            className="absolute left-2 right-2 top-11 p-3.5 bg-slate-900/98 backdrop-blur-xl border border-slate-700 rounded-xl shadow-2xl text-[11px] text-slate-200 z-50 animate-in fade-in duration-150"
-            onMouseEnter={() => setActiveTooltip(id)}
-            onMouseLeave={() => setActiveTooltip(null)}
-          >
-            <div className="font-bold text-amber-400 mb-1 flex items-center gap-1.5">
-              <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
-              <span>{tooltip.title}</span>
-            </div>
-            <p className="leading-relaxed text-slate-300">{tooltip.desc}</p>
-          </div>
-        )}
 
         {/* Main Value */}
         <div className="my-1">
@@ -211,6 +216,7 @@ const MetricsGrid = ({ data, language }) => {
           value: data.visibleSats,
           badge: 'GNSS',
           subValue: data.satSource || t.satLive,
+          alignRight: true,
           tooltip: {
             title: t.gnssTooltipTitle,
             desc: t.gnssTooltipDesc
@@ -225,6 +231,7 @@ const MetricsGrid = ({ data, language }) => {
           alert: satsAlert,
           badge: 'LOCK',
           subValue: data.satSource || t.satLive,
+          alignRight: true,
           tooltip: {
             title: t.gnssTooltipTitle,
             desc: t.gnssTooltipDesc
@@ -239,6 +246,7 @@ const MetricsGrid = ({ data, language }) => {
           alert: kpAlert,
           badge: 'NOAA',
           subValue: data.kpSource || t.kpWarning,
+          alignRight: true,
           tooltip: {
             title: t.kpTooltipTitle,
             desc: t.kpTooltipDesc

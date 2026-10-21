@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { locales } from '../utils/locales';
 
 const getWindDirText = (degree, lang) => {
@@ -10,6 +11,7 @@ const getWindDirText = (degree, lang) => {
 
 const MetricsGrid = ({ data, language }) => {
   const t = locales[language] || locales['tr'];
+  const [activeTooltip, setActiveTooltip] = useState(null);
 
   if (!data) {
     return (
@@ -20,7 +22,7 @@ const MetricsGrid = ({ data, language }) => {
     );
   }
 
-  const renderCard = ({ icon, title, value, unit = '', subValue = null, badge = null, alert = 'normal' }) => {
+  const renderCard = ({ id, icon, title, value, unit = '', subValue = null, badge = null, alert = 'normal', tooltip = null }) => {
     let alertClasses = 'bg-slate-800/60 border-slate-700/60 hover:border-slate-600';
     let textAccent = 'text-white';
 
@@ -35,20 +37,49 @@ const MetricsGrid = ({ data, language }) => {
       textAccent = 'text-red-300';
     }
 
+    const isTooltipOpen = activeTooltip === id;
+
     return (
-      <div className={`flex flex-col justify-between p-3.5 rounded-xl border backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${alertClasses}`}>
+      <div className={`relative flex flex-col justify-between p-3.5 rounded-xl border backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${alertClasses}`}>
         {/* Top Header */}
         <div className="flex items-center justify-between gap-1 mb-2">
-          <div className="flex items-center gap-1.5 text-slate-400 text-xs font-semibold">
-            <span className="text-sm">{icon}</span>
+          <div className="flex items-center gap-1.5 text-slate-400 text-xs font-semibold truncate">
+            <span className="text-sm flex-shrink-0">{icon}</span>
             <span className="truncate">{title}</span>
+            {tooltip && (
+              <button
+                type="button"
+                onClick={() => setActiveTooltip(isTooltipOpen ? null : id)}
+                onMouseEnter={() => setActiveTooltip(id)}
+                onMouseLeave={() => setActiveTooltip(null)}
+                className="w-4 h-4 rounded-full bg-slate-700/80 hover:bg-slate-600 text-slate-300 hover:text-emerald-400 text-[10px] font-bold flex items-center justify-center ml-0.5 transition-colors focus:outline-none"
+                aria-label="Bilgi"
+              >
+                ℹ
+              </button>
+            )}
           </div>
           {badge && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-md font-bold tracking-wider bg-slate-700/70 text-slate-300 border border-slate-600/50">
+            <span className="text-[10px] px-1.5 py-0.5 rounded-md font-bold tracking-wider bg-slate-700/70 text-slate-300 border border-slate-600/50 flex-shrink-0">
               {badge}
             </span>
           )}
         </div>
+
+        {/* Hover / Tap Tooltip */}
+        {tooltip && isTooltipOpen && (
+          <div 
+            className="absolute left-2 right-2 top-11 p-3 bg-slate-900/95 backdrop-blur-xl border border-slate-700 rounded-xl shadow-2xl text-[11px] text-slate-300 z-50 animate-in fade-in duration-150"
+            onMouseEnter={() => setActiveTooltip(id)}
+            onMouseLeave={() => setActiveTooltip(null)}
+          >
+            <div className="font-bold text-emerald-400 mb-1 flex items-center gap-1">
+              <span>ℹ</span>
+              <span>{tooltip.title}</span>
+            </div>
+            <p className="leading-snug text-slate-300">{tooltip.desc}</p>
+          </div>
+        )}
 
         {/* Main Value */}
         <div className="my-1">
@@ -87,6 +118,7 @@ const MetricsGrid = ({ data, language }) => {
     <div className="px-4 md:px-5">
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {renderCard({
+          id: 'weather',
           icon: '⛅',
           title: t.weather,
           value: data.weatherCode <= 3 ? t.clear : t.rain,
@@ -94,6 +126,7 @@ const MetricsGrid = ({ data, language }) => {
         })}
 
         {renderCard({
+          id: 'sun',
           icon: '🌅',
           title: t.sunTimes,
           value: `${data.sunrise}`,
@@ -102,6 +135,7 @@ const MetricsGrid = ({ data, language }) => {
         })}
 
         {renderCard({
+          id: 'temp',
           icon: '🌡️',
           title: t.temperature,
           value: data.temperature,
@@ -110,6 +144,7 @@ const MetricsGrid = ({ data, language }) => {
         })}
 
         {renderCard({
+          id: 'wind',
           icon: '💨',
           title: t.wind,
           value: data.windSpeed,
@@ -118,6 +153,7 @@ const MetricsGrid = ({ data, language }) => {
         })}
 
         {renderCard({
+          id: 'gusts',
           icon: '🌪️',
           title: t.gusts,
           value: data.windGusts,
@@ -127,6 +163,7 @@ const MetricsGrid = ({ data, language }) => {
         })}
 
         {renderCard({
+          id: 'dir',
           icon: '🧭',
           title: t.windDir,
           value: getWindDirText(data.windDirDegree, language),
@@ -134,6 +171,7 @@ const MetricsGrid = ({ data, language }) => {
         })}
 
         {renderCard({
+          id: 'precip',
           icon: '💧',
           title: t.precipProb,
           value: data.precipProb,
@@ -142,6 +180,7 @@ const MetricsGrid = ({ data, language }) => {
         })}
 
         {renderCard({
+          id: 'cloud',
           icon: '☁️',
           title: t.cloudCover,
           value: data.cloudCover,
@@ -149,6 +188,7 @@ const MetricsGrid = ({ data, language }) => {
         })}
 
         {renderCard({
+          id: 'vis',
           icon: '👁️',
           title: t.visibility,
           value: language === 'tr' ? data.visibilityKm : data.visibilityMiles,
@@ -157,29 +197,44 @@ const MetricsGrid = ({ data, language }) => {
         })}
 
         {renderCard({
+          id: 'sats_vis',
           icon: '🛰️',
           title: t.visibleSats,
           value: data.visibleSats,
           badge: 'GNSS',
-          subValue: data.satSource || t.satLive
+          subValue: data.satSource || t.satLive,
+          tooltip: {
+            title: t.gnssTooltipTitle,
+            desc: t.gnssTooltipDesc
+          }
         })}
 
         {renderCard({
+          id: 'sats_lock',
           icon: '🔒',
           title: t.satsLocked,
           value: data.satsLocked,
           alert: satsAlert,
           badge: 'LOCK',
-          subValue: data.satSource || t.satLive
+          subValue: data.satSource || t.satLive,
+          tooltip: {
+            title: t.gnssTooltipTitle,
+            desc: t.gnssTooltipDesc
+          }
         })}
 
         {renderCard({
+          id: 'kp',
           icon: '⚡',
           title: t.kpIndex,
           value: data.kpIndex,
           alert: kpAlert,
           badge: 'NOAA',
-          subValue: data.kpSource || t.kpWarning
+          subValue: data.kpSource || t.kpWarning,
+          tooltip: {
+            title: t.kpTooltipTitle,
+            desc: t.kpTooltipDesc
+          }
         })}
       </div>
     </div>

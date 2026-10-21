@@ -52,10 +52,14 @@ const MetricsGrid = ({ data, language }) => {
                 onClick={() => setActiveTooltip(isTooltipOpen ? null : id)}
                 onMouseEnter={() => setActiveTooltip(id)}
                 onMouseLeave={() => setActiveTooltip(null)}
-                className="w-4 h-4 rounded-full bg-slate-700/80 hover:bg-slate-600 text-slate-300 hover:text-emerald-400 text-[10px] font-bold flex items-center justify-center ml-0.5 transition-colors focus:outline-none"
-                aria-label="Bilgi"
+                className="w-4 h-4 rounded-full bg-slate-700/80 hover:bg-slate-600 text-amber-400 hover:text-amber-300 flex items-center justify-center ml-0.5 transition-colors focus:outline-none cursor-pointer flex-shrink-0"
+                aria-label="Detay"
               >
-                ℹ
+                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
               </button>
             )}
           </div>
@@ -69,15 +73,19 @@ const MetricsGrid = ({ data, language }) => {
         {/* Hover / Tap Tooltip */}
         {tooltip && isTooltipOpen && (
           <div 
-            className="absolute left-2 right-2 top-11 p-3 bg-slate-900/95 backdrop-blur-xl border border-slate-700 rounded-xl shadow-2xl text-[11px] text-slate-300 z-50 animate-in fade-in duration-150"
+            className="absolute left-2 right-2 top-11 p-3.5 bg-slate-900/98 backdrop-blur-xl border border-slate-700 rounded-xl shadow-2xl text-[11px] text-slate-200 z-50 animate-in fade-in duration-150"
             onMouseEnter={() => setActiveTooltip(id)}
             onMouseLeave={() => setActiveTooltip(null)}
           >
-            <div className="font-bold text-emerald-400 mb-1 flex items-center gap-1">
-              <span>ℹ</span>
+            <div className="font-bold text-amber-400 mb-1 flex items-center gap-1.5">
+              <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
               <span>{tooltip.title}</span>
             </div>
-            <p className="leading-snug text-slate-300">{tooltip.desc}</p>
+            <p className="leading-relaxed text-slate-300">{tooltip.desc}</p>
           </div>
         )}
 

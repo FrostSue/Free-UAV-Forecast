@@ -22,8 +22,9 @@ const App = () => {
   }, [weatherData]);
 
   return (
-    <div className="min-h-screen bg-transparent text-slate-200 font-sans selection:bg-emerald-500 selection:text-white">
-      <div className="w-full max-w-3xl mx-auto bg-slate-900 min-h-screen shadow-2xl overflow-hidden flex flex-col border-x border-slate-800 relative">
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-emerald-500 selection:text-white flex flex-col justify-start items-center py-0 md:py-6 px-0 md:px-4">
+      {/* Main Glassmorphism Dashboard Container */}
+      <div className="w-full max-w-5xl bg-slate-900/95 border-x md:border border-slate-800/90 md:rounded-3xl shadow-2xl overflow-hidden flex flex-col relative min-h-screen md:min-h-0">
         <Header
           language={language}
           setLanguage={setLanguage}
@@ -33,19 +34,26 @@ const App = () => {
         />
 
         {error ? (
-          <div className="flex-1 flex items-center justify-center p-6 text-center text-red-400">
-            <p className="bg-red-950/30 p-4 rounded-lg border border-red-900/50 text-sm">
-              {error}
-            </p>
+          <div className="flex-1 flex items-center justify-center p-8 text-center text-red-400">
+            <div className="bg-red-950/40 border border-red-900/60 p-6 rounded-2xl max-w-md shadow-xl backdrop-blur-md">
+              <span className="text-3xl block mb-2">⚠️</span>
+              <p className="text-sm font-semibold">{error}</p>
+            </div>
           </div>
         ) : loading || !weatherData ? (
-          <div className="flex-1 flex items-center justify-center p-6">
-            <div className="animate-pulse text-emerald-500 font-medium tracking-wide">
+          <div className="flex-1 flex flex-col items-center justify-center p-16 text-center">
+            <div className="relative flex h-12 w-12 mb-4">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-40"></span>
+              <span className="relative inline-flex rounded-full h-12 w-12 bg-emerald-600/30 border border-emerald-500/50 items-center justify-center text-xl">
+                🛰️
+              </span>
+            </div>
+            <div className="animate-pulse text-emerald-400 font-bold tracking-wider text-sm">
               {t.loading}
             </div>
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto pb-10 custom-scrollbar">
+          <div className="flex-1 pb-10 space-y-2">
             <FlightStatus data={weatherData.current} language={language} />
             <MetricsGrid data={weatherData.current} language={language} />
             <HourlyForecast hourlyData={weatherData.hourlyForecast} language={language} />

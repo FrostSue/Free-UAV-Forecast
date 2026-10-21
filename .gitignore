@@ -1,0 +1,11 @@
+# Dependencies
+node_modules/
+
+# Production build artifacts
+dist/
+dist-ssr/
+
+# Local env & editor files
+*.local
+.DS_Store
+*.log

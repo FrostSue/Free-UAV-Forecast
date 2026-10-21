@@ -45,15 +45,15 @@ const WindProfile = (props) => {
                 </svg>
               </button>
 
-              {/* Tooltip Card (Aligned left-0 to extend to the open right side, no cutoff) */}
+              {/* 100% Solid Opaque Tooltip Card (Zero Background Transparency Bleed) */}
               {showTooltip && (
                 <div 
-                  className="absolute left-0 top-full mt-2.5 w-80 max-w-[calc(100vw-3rem)] p-4 bg-slate-900/98 backdrop-blur-xl border border-slate-700 rounded-xl shadow-2xl text-xs text-slate-200 z-50 animate-in fade-in zoom-in-95 duration-150"
+                  className="absolute left-0 top-full mt-2.5 w-80 max-w-[calc(100vw-3rem)] p-4 bg-slate-950 border border-slate-700 rounded-xl shadow-2xl shadow-black/80 text-xs text-slate-100 z-50 animate-in fade-in zoom-in-95 duration-150"
                   onMouseEnter={() => setShowTooltip(true)}
                   onMouseLeave={() => setShowTooltip(false)}
                 >
                   {/* Upward pointer arrow */}
-                  <div className="absolute -top-1.5 left-2 w-3 h-3 bg-slate-900 border-t border-l border-slate-700 rotate-45 pointer-events-none"></div>
+                  <div className="absolute -top-1.5 left-2 w-3 h-3 bg-slate-950 border-t border-l border-slate-700 rotate-45 pointer-events-none"></div>
 
                   <div className="flex items-center gap-2 text-amber-400 font-bold mb-2 pb-1.5 border-b border-slate-800">
                     <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -63,10 +63,10 @@ const WindProfile = (props) => {
                     </svg>
                     <span>{t.windProfileTooltipTitle}</span>
                   </div>
-                  <p className="leading-relaxed text-slate-300 mb-2.5">
+                  <p className="leading-relaxed text-slate-200 text-[11px] mb-2.5 font-normal">
                     {t.windProfileTooltipDesc}
                   </p>
-                  <div className="bg-slate-950 p-2.5 rounded-lg border border-slate-800 text-center font-mono text-emerald-400 font-bold text-xs">
+                  <div className="bg-slate-900 p-2.5 rounded-lg border border-slate-800 text-center font-mono text-emerald-400 font-bold text-xs">
                     {t.windProfileFormula}
                   </div>
                 </div>

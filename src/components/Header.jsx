@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { locales } from '../utils/locales';
 
-const Header = ({ language, setLanguage, locationName, onOpenModal, lastUpdateTime }) => {
+const Header = ({ language, setLanguage, windUnit = 'km/h', setWindUnit, locationName, onOpenModal, lastUpdateTime }) => {
   const t = locales[language] || locales['tr'];
   const [time, setTime] = useState(new Date());
   const localeCode = language === 'tr' ? 'tr-TR' : 'en-US';
@@ -13,6 +13,17 @@ const Header = ({ language, setLanguage, locationName, onOpenModal, lastUpdateTi
 
   const toggleLanguage = () => {
     setLanguage(prev => (prev === 'tr' ? 'en' : 'tr'));
+  };
+
+  const cycleWindUnit = () => {
+    if (!setWindUnit) return;
+    const units = ['km/h', 'kn', 'm/s', 'mph'];
+    const nextIdx = (units.indexOf(windUnit) + 1) % units.length;
+    const nextUnit = units[nextIdx];
+    setWindUnit(nextUnit);
+    try {
+      localStorage.setItem('uav_wind_unit', nextUnit);
+    } catch (e) {}
   };
 
   const updateTimeStr = lastUpdateTime 
@@ -37,8 +48,17 @@ const Header = ({ language, setLanguage, locationName, onOpenModal, lastUpdateTi
           </div>
         </div>
 
-        {/* Action Controls: Language Toggle */}
+        {/* Action Controls: Wind Unit Selector & Language Toggle */}
         <div className="flex items-center gap-2">
+          <button
+            onClick={cycleWindUnit}
+            title={`${t.windUnitLabel || 'Wind Unit'}: ${windUnit.toUpperCase()}`}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800/80 hover:bg-slate-700 border border-slate-700 hover:border-emerald-500/50 rounded-lg text-xs font-semibold text-slate-200 transition-all shadow-sm active:scale-95 font-mono"
+          >
+            <span className="text-emerald-400">💨</span>
+            <span>{windUnit.toUpperCase()}</span>
+          </button>
+
           <button
             onClick={toggleLanguage}
             title="Dili Değiştir / Switch Language"

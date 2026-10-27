@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { locales } from '../utils/locales';
+import { convertWindSpeed } from '../utils/units';
 
 const getWindDirText = (degree, lang) => {
   const dirsEN = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
@@ -9,7 +10,7 @@ const getWindDirText = (degree, lang) => {
   return `${degree}° ${dirs[index % 8]}`;
 };
 
-const MetricsGrid = ({ data, language }) => {
+const MetricsGrid = ({ data, language, windUnit = 'km/h' }) => {
   const t = locales[language] || locales['tr'];
   const [activeTooltip, setActiveTooltip] = useState(null);
   const gridRef = useRef(null);
@@ -229,8 +230,8 @@ const MetricsGrid = ({ data, language }) => {
           id: 'wind',
           icon: '💨',
           title: t.wind,
-          value: data.windSpeed,
-          unit: t.kmh,
+          value: convertWindSpeed(data.windSpeedKmh ?? data.windSpeed, windUnit, 1),
+          unit: windUnit,
           subValue: t.alt5000,
           popPosition: 'down'
         })}
@@ -240,8 +241,8 @@ const MetricsGrid = ({ data, language }) => {
           id: 'gusts',
           icon: '🌪️',
           title: t.gusts,
-          value: data.windGusts,
-          unit: t.kmh,
+          value: convertWindSpeed(data.windGustsKmh ?? data.windGusts, windUnit, 1),
+          unit: windUnit,
           alert: gustAlert,
           subValue: t.alt5000,
           popPosition: 'down',

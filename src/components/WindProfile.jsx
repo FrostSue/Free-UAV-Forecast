@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { locales } from '../utils/locales';
+import { convertWindSpeed } from '../utils/units';
 
 const WindProfile = (props) => {
   const language = props.language || 'tr';
+  const windUnit = props.windUnit || 'km/h';
   const t = locales[language] || locales['tr'];
   const [showTooltip, setShowTooltip] = useState(false);
   
@@ -81,8 +83,8 @@ const WindProfile = (props) => {
             <thead className="text-[11px] font-bold text-slate-400 bg-slate-900/95 uppercase tracking-wider">
               <tr>
                 <th className="px-3 py-3 border-r border-slate-800">{t.altitudeAgl}</th>
-                <th className="px-3 py-3 border-r border-slate-800">{t.windSpeedProfile}</th>
-                <th className="px-3 py-3 border-r border-slate-800">{t.gustSpeedProfile}</th>
+                <th className="px-3 py-3 border-r border-slate-800">{t.windSpeedProfile} ({windUnit})</th>
+                <th className="px-3 py-3 border-r border-slate-800">{t.gustSpeedProfile} ({windUnit})</th>
                 <th className="px-3 py-3 border-r border-slate-800">{t.temperature}</th>
                 <th className="px-3 py-3">{t.fly}</th>
               </tr>
@@ -98,10 +100,10 @@ const WindProfile = (props) => {
                       </span>
                     </td>
                     <td className="px-3 py-2.5 border-r border-slate-800/60 text-slate-200 font-mono">
-                      {tier.windSpeed} {t.kmh}
+                      {convertWindSpeed(tier.windSpeedKmh ?? tier.windSpeed, windUnit, 1)} {windUnit}
                     </td>
                     <td className="px-3 py-2.5 border-r border-slate-800/60 text-white font-bold font-mono">
-                      {tier.gustSpeed} {t.kmh}
+                      {convertWindSpeed(tier.gustSpeedKmh ?? tier.gustSpeed, windUnit, 1)} {windUnit}
                     </td>
                     <td className="px-3 py-2.5 border-r border-slate-800/60 text-slate-300">
                       {tier.temperature}°C

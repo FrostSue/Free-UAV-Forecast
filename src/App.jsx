@@ -10,6 +10,13 @@ import { locales } from './utils/locales';
 
 const App = () => {
   const [language, setLanguage] = useState('tr');
+  const [windUnit, setWindUnit] = useState(() => {
+    try {
+      return localStorage.getItem('uav_wind_unit') || 'km/h';
+    } catch {
+      return 'km/h';
+    }
+  });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [lastUpdateTime, setLastUpdateTime] = useState(null);
   const { loading, error, locationName, weatherData, fetchWeather } = useWeatherData();
@@ -28,6 +35,8 @@ const App = () => {
         <Header
           language={language}
           setLanguage={setLanguage}
+          windUnit={windUnit}
+          setWindUnit={setWindUnit}
           locationName={locationName || (loading ? t.loading : '')}
           onOpenModal={() => setIsModalOpen(true)}
           lastUpdateTime={lastUpdateTime}
@@ -55,9 +64,9 @@ const App = () => {
         ) : (
           <div className="flex-1 pb-10 space-y-2">
             <FlightStatus data={weatherData.current} language={language} />
-            <MetricsGrid data={weatherData.current} language={language} />
-            <HourlyForecast hourlyData={weatherData.hourlyForecast} language={language} />
-            <WindProfile profileData={weatherData.windProfile} language={language} />
+            <MetricsGrid data={weatherData.current} language={language} windUnit={windUnit} />
+            <HourlyForecast hourlyData={weatherData.hourlyForecast} language={language} windUnit={windUnit} />
+            <WindProfile profileData={weatherData.windProfile} language={language} windUnit={windUnit} />
           </div>
         )}
 

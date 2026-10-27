@@ -61,7 +61,9 @@ export const buildWindProfile = (w10, w80, w120, w180, g10, t2, t80, t120, t180)
       altitudeKey: tier.key,
       altitudeMeters: tier.alt,
       windSpeed: speed.toFixed(1),
+      windSpeedKmh: parseFloat(speed.toFixed(1)),
       gustSpeed: gustSpeed.toFixed(1),
+      gustSpeedKmh: parseFloat(gustSpeed.toFixed(1)),
       temperature: tier.t.toFixed(1)
     };
   });

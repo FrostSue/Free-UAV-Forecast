@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { locales } from '../utils/locales';
+import { convertWindSpeed } from '../utils/units';
 
-const HourlyForecast = ({ data, hourlyData, language }) => {
+const HourlyForecast = ({ data, hourlyData, language, windUnit = 'km/h' }) => {
   const activeData = hourlyData || data;
   const t = locales[language] || locales['tr'];
   const [days, setDays] = useState(1);
@@ -91,7 +92,7 @@ const HourlyForecast = ({ data, hourlyData, language }) => {
                 <th className="px-3 py-3 border-r border-slate-800">{t.time}</th>
                 <th className="px-3 py-3 border-r border-slate-800">{t.temperature}</th>
                 <th className="px-3 py-3 border-r border-slate-800">{t.precipProb}</th>
-                <th className="px-3 py-3 border-r border-slate-800">{t.windGustCol}</th>
+                <th className="px-3 py-3 border-r border-slate-800">{t.windGustCol} ({windUnit})</th>
                 <th className="px-3 py-3 border-r border-slate-800">{t.cloudCover}</th>
                 <th className="px-3 py-3">{t.fly}</th>
               </tr>
@@ -110,7 +111,7 @@ const HourlyForecast = ({ data, hourlyData, language }) => {
                     <td className="px-3 py-2.5 border-r border-slate-800/60 text-slate-200">{row.temperature}°C</td>
                     <td className="px-3 py-2.5 border-r border-slate-800/60 text-slate-200">{row.precipProb}%</td>
                     <td className="px-3 py-2.5 border-r border-slate-800/60 text-slate-200 font-mono">
-                      {row.windSpeed} / <span className="font-bold text-white">{row.windGusts}</span> {t.kmh}
+                      {convertWindSpeed(row.windSpeedKmh ?? row.windSpeed, windUnit, 1)} / <span className="font-bold text-white">{convertWindSpeed(row.windGustsKmh ?? row.windGusts, windUnit, 1)}</span> {windUnit}
                     </td>
                     <td className="px-3 py-2.5 border-r border-slate-800/60 text-slate-400">{row.cloudCover}%</td>
                     <td className="px-3 py-2.5">

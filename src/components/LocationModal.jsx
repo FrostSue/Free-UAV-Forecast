@@ -1,52 +1,91 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, useMapEvents, useMap, CircleMarker } from 'react-leaflet';
-import { locales } from '../utils/locales';
+import { getLocale } from '../utils/locales';
 import { searchCity, getBestUserLocation } from '../utils/spaceWeather';
+import Icon from './Icon';
+
+const DEFAULT_CENTER = [41.0082, 28.9784];
 
 const MapUpdater = ({ center }) => {
   const map = useMap();
   useEffect(() => {
-    map.setView(center, map.getZoom(), { animate: true });
+    map.setView(center, Math.max(map.getZoom(), 9), { animate: true });
   }, [center, map]);
+  useEffect(() => {
+    // The map mounts inside an animating dialog; recompute its size once visible.
+    const id = setTimeout(() => map.invalidateSize(), 220);
+    return () => clearTimeout(id);
+  }, [map]);
   return null;
 };
 
-const LocationModal = ({ isOpen, onClose, onSelect, language }) => {
-  const t = locales[language] || locales['tr'];
+const MapClickHandler = ({ onPick }) => {
+  useMapEvents({
+    click(e) {
+      onPick([e.latlng.lat, e.latlng.lng]);
+    }
+  });
+  return null;
+};
+
+const LocationModal = ({ isOpen, onClose, onSelect, language, initialCoords, initialName }) => {
+  const t = getLocale(language);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
   const [inputLat, setInputLat] = useState('');
   const [inputLng, setInputLng] = useState('');
-  const [mapCenter, setMapCenter] = useState([41.0082, 28.9784]);
+  const [mapCenter, setMapCenter] = useState(DEFAULT_CENTER);
   const [customName, setCustomName] = useState(null);
   const [validationError, setValidationError] = useState('');
+  const searchRef = useRef(null);
+
+  // Reset the dialog to the current location whenever it opens
+  useEffect(() => {
+    if (!isOpen) return;
+    const start = initialCoords ? [initialCoords.lat, initialCoords.lon] : DEFAULT_CENTER;
+    setMapCenter(start);
+    setCustomName(initialName || null);
+    setSearchQuery('');
+    setSearchResults([]);
+    setValidationError('');
+    const id = setTimeout(() => searchRef.current?.focus(), 50);
+    return () => clearTimeout(id);
+  }, [isOpen, initialCoords, initialName]);
 
   useEffect(() => {
     setInputLat(mapCenter[0].toFixed(4));
     setInputLng(mapCenter[1].toFixed(4));
   }, [mapCenter]);
 
+  // Escape to close + body scroll lock
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    const onKey = (e) => e.key === 'Escape' && onClose();
+    document.addEventListener('keydown', onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
-  const handleSearch = async () => {
-    if (!searchQuery || !searchQuery.trim()) return;
+  const handleSearch = async (e) => {
+    e?.preventDefault();
+    if (!searchQuery.trim()) return;
     setIsSearching(true);
     setValidationError('');
     try {
-      const results = await searchCity(searchQuery);
+      const results = await searchCity(searchQuery, language);
       setSearchResults(results);
-      if (results.length > 0) {
-        const first = results[0];
-        setMapCenter([first.lat, first.lon]);
-        setCustomName(first.name);
-      } else {
-        setValidationError(language === 'tr' ? 'Konum bulunamadı.' : 'No locations found.');
-      }
-    } catch (err) {
-      console.error('Search error:', err);
-      setValidationError(language === 'tr' ? 'Arama sırasında hata oluştu.' : 'Search error.');
+      if (results.length === 0) setValidationError(t.noResults);
+    } catch {
+      setSearchResults([]);
+      setValidationError(t.searchError);
     } finally {
       setIsSearching(false);
     }
@@ -54,54 +93,45 @@ const LocationModal = ({ isOpen, onClose, onSelect, language }) => {
 
   const handleSelectSearchResult = (result) => {
     setMapCenter([result.lat, result.lon]);
-    setCustomName(result.name);
+    setCustomName(result.label);
     setSearchResults([]);
-    setSearchQuery(result.name);
+    setSearchQuery(result.label);
   };
 
-  // Robust Auto Location: Uses Browser GPS + Automatic IP Geolocation Fallback
   const handleAutoLocation = async () => {
     setIsLocating(true);
     setValidationError('');
     try {
       const loc = await getBestUserLocation();
       setMapCenter([loc.lat, loc.lon]);
-      if (loc.cityName) {
-        setCustomName(loc.cityName);
-        setSearchQuery(loc.cityName);
-      } else {
-        setCustomName(null);
-      }
-    } catch (err) {
-      setValidationError(language === 'tr' ? 'Konum tespit edilemedi.' : 'Could not determine location.');
+      setCustomName(loc.cityName || null);
+      if (loc.cityName) setSearchQuery(loc.cityName);
+    } catch {
+      setValidationError(t.locateError);
     } finally {
       setIsLocating(false);
     }
   };
 
-  const handleManualSubmit = () => {
+  const handleManualSubmit = (e) => {
+    e?.preventDefault();
     const lat = parseFloat(inputLat);
     const lng = parseFloat(inputLng);
-    
-    if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-      setValidationError(t.invalidCoords || 'Geçersiz koordinat! (Enlem -90/90, Boylam -180/180)');
+    if (!Number.isFinite(lat) || !Number.isFinite(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      setValidationError(t.invalidCoords);
       return;
     }
-
     setValidationError('');
     setMapCenter([lat, lng]);
     setCustomName(null);
   };
 
-  const MapClickHandler = () => {
-    useMapEvents({
-      click(e) {
-        setMapCenter([e.latlng.lat, e.latlng.lng]);
-        setCustomName(null);
-        setValidationError('');
-      }
-    });
-    return null;
+  const handleMapPick = (latlng) => {
+    // Wrap longitudes from a panned world map back into -180..180
+    const lng = ((((latlng[1] + 180) % 360) + 360) % 360) - 180;
+    setMapCenter([latlng[0], lng]);
+    setCustomName(null);
+    setValidationError('');
   };
 
   const handleConfirm = () => {
@@ -110,121 +140,147 @@ const LocationModal = ({ isOpen, onClose, onSelect, language }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-      <div className="bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl border border-slate-700/80 overflow-hidden flex flex-col max-h-[90vh]">
-        <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-850">
-          <h3 className="text-base md:text-lg font-bold text-white flex items-center gap-2">
-            <span>📍</span>
-            <span>{t.locationPickerTitle}</span>
-          </h3>
-          <button 
-            onClick={onClose} 
-            className="text-slate-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-slate-800"
-          >
-            ✕
+    <div
+      className="fixed inset-0 z-[900] flex items-end justify-center bg-ink-950/80 p-0 backdrop-blur-sm sm:items-center sm:p-4"
+      onMouseDown={(e) => e.target === e.currentTarget && onClose()}
+      role="presentation"
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="location-modal-title"
+        className="flex max-h-[94vh] w-full max-w-lg animate-scale-in flex-col overflow-hidden rounded-t-3xl border border-white/[0.08] bg-ink-900 shadow-2xl shadow-black/70 sm:rounded-3xl"
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between gap-3 border-b border-white/[0.06] px-5 py-4">
+          <div className="flex items-center gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-400/10 text-brand-300 ring-1 ring-brand-400/15">
+              <Icon name="mapPin" className="h-4 w-4" />
+            </span>
+            <div>
+              <h3 id="location-modal-title" className="font-display text-base font-semibold text-white">{t.locationPickerTitle}</h3>
+              <p className="text-[11.5px] text-slate-500">{t.locationPickerSub}</p>
+            </div>
+          </div>
+          <button type="button" onClick={onClose} className="icon-btn h-8 w-8" aria-label={t.close}>
+            <Icon name="x" className="h-4 w-4" />
           </button>
         </div>
-        
-        <div className="p-4 overflow-y-auto custom-scrollbar flex-1 space-y-3">
+
+        <div className="flex-1 space-y-3 overflow-y-auto p-5 custom-scrollbar">
           {validationError && (
-            <div className="p-2.5 bg-red-950/60 border border-red-800 text-red-300 text-xs rounded-xl font-medium">
+            <div className="flex items-center gap-2 rounded-xl border border-rose-400/25 bg-rose-400/10 px-3 py-2 text-xs font-medium text-rose-200">
+              <Icon name="alert" className="h-4 w-4 flex-shrink-0" />
               {validationError}
             </div>
           )}
 
-          {/* Search Box */}
-          <div className="flex gap-2">
+          {/* Search */}
+          <form onSubmit={handleSearch} className="relative">
+            <Icon name="search" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
             <input
-              type="text"
+              ref={searchRef}
+              type="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t.searchLocation}
-              className="flex-1 bg-slate-800 text-white px-3 py-2 rounded-xl border border-slate-700 focus:outline-none focus:border-emerald-500 text-xs md:text-sm font-medium"
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              className="field pl-9 pr-20"
+              aria-label={t.searchLocation}
             />
-            <button 
-              onClick={handleSearch} 
+            <button
+              type="submit"
               disabled={isSearching}
-              className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white px-4 py-2 rounded-xl text-xs md:text-sm font-semibold transition-all shadow-md active:scale-95"
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-lg bg-white/[0.08] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/[0.14] disabled:opacity-50"
             >
-              {isSearching ? '...' : t.search}
+              {isSearching ? <Icon name="refresh" className="h-3.5 w-3.5 animate-spin" /> : t.search}
             </button>
-          </div>
+          </form>
 
           {searchResults.length > 0 && (
-            <div className="max-h-36 overflow-y-auto bg-slate-800/90 border border-slate-700 rounded-xl divide-y divide-slate-700">
-              {searchResults.map((item, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleSelectSearchResult(item)}
-                  className="w-full text-left p-2.5 text-xs text-slate-200 hover:bg-slate-700/80 transition-colors font-medium"
-                >
-                  📍 {item.name}
-                </button>
+            <ul className="max-h-48 divide-y divide-white/[0.05] overflow-y-auto rounded-xl border border-white/[0.08] bg-ink-950/60 custom-scrollbar">
+              {searchResults.map(item => (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    onClick={() => handleSelectSearchResult(item)}
+                    className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition hover:bg-white/[0.05]"
+                  >
+                    <Icon name="mapPin" className="h-4 w-4 flex-shrink-0 text-brand-300" />
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-medium text-white">{item.name}</span>
+                      <span className="block truncate text-[11px] text-slate-500">{item.region}</span>
+                    </span>
+                    {item.countryCode && (
+                      <span className="ml-auto font-mono text-[10px] font-semibold text-slate-500">{item.countryCode}</span>
+                    )}
+                  </button>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
 
-          {/* Coordinate Inputs & Auto-Location Trigger */}
-          <div className="flex gap-2 items-center">
-            <button 
-              onClick={handleAutoLocation} 
+          {/* Coordinates */}
+          <form onSubmit={handleManualSubmit} className="grid grid-cols-[auto_1fr_1fr_auto] gap-2">
+            <button
+              type="button"
+              onClick={handleAutoLocation}
               disabled={isLocating}
-              title={t.myLocation} 
-              className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-3 py-2 rounded-xl text-xs font-semibold transition-all shadow-sm active:scale-95 flex items-center gap-1.5 flex-shrink-0 disabled:opacity-50"
+              title={t.myLocation}
+              className="btn px-2.5"
             >
-              {isLocating ? (
-                <span className="animate-spin text-emerald-400">🌀</span>
-              ) : (
-                <span>🎯</span>
-              )}
+              <Icon name="locate" className={`h-4 w-4 text-brand-300 ${isLocating ? 'animate-spin-slow' : ''}`} />
               <span className="hidden sm:inline">{t.myLocation}</span>
             </button>
-            <input
-              type="number"
-              step="any"
-              value={inputLat}
-              onChange={(e) => setInputLat(e.target.value)}
-              placeholder={t.latitude}
-              className="flex-1 bg-slate-800 text-white px-2.5 py-2 rounded-xl border border-slate-700 focus:outline-none focus:border-blue-500 text-xs font-mono"
-            />
-            <input
-              type="number"
-              step="any"
-              value={inputLng}
-              onChange={(e) => setInputLng(e.target.value)}
-              placeholder={t.longitude}
-              className="flex-1 bg-slate-800 text-white px-2.5 py-2 rounded-xl border border-slate-700 focus:outline-none focus:border-blue-500 text-xs font-mono"
-            />
-            <button 
-              onClick={handleManualSubmit} 
-              className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-xl text-xs font-semibold transition-all shadow-md active:scale-95"
-            >
-              Git
-            </button>
-          </div>
+            <label className="relative">
+              <span className="pointer-events-none absolute left-2.5 top-1 text-[9px] font-semibold uppercase tracking-wider text-slate-500">{t.latitude}</span>
+              <input
+                type="number"
+                step="any"
+                inputMode="decimal"
+                value={inputLat}
+                onChange={(e) => setInputLat(e.target.value)}
+                className="field pb-1.5 pl-2.5 pt-4 font-mono text-xs"
+                aria-label={t.latitude}
+              />
+            </label>
+            <label className="relative">
+              <span className="pointer-events-none absolute left-2.5 top-1 text-[9px] font-semibold uppercase tracking-wider text-slate-500">{t.longitude}</span>
+              <input
+                type="number"
+                step="any"
+                inputMode="decimal"
+                value={inputLng}
+                onChange={(e) => setInputLng(e.target.value)}
+                className="field pb-1.5 pl-2.5 pt-4 font-mono text-xs"
+                aria-label={t.longitude}
+              />
+            </label>
+            <button type="submit" className="btn px-3">{t.go}</button>
+          </form>
 
-          {/* Leaflet Interactive Map */}
-          <div className="relative h-60 w-full rounded-xl border border-slate-700 overflow-hidden shadow-inner">
-            <MapContainer center={mapCenter} zoom={11} className="h-full w-full">
-              <TileLayer 
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
+          {/* Map */}
+          <div className="relative h-64 w-full overflow-hidden rounded-2xl border border-white/[0.08] sm:h-72">
+            <MapContainer center={mapCenter} zoom={10} className="h-full w-full" worldCopyJump>
+              <TileLayer
+                url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                className="map-tiles-dark"
+                maxZoom={19}
               />
               <MapUpdater center={mapCenter} />
-              <MapClickHandler />
-              <CircleMarker
-                center={mapCenter}
-                radius={8}
-                pathOptions={{ color: '#10b981', fillColor: '#10b981', fillOpacity: 0.85, weight: 2 }}
-              />
+              <MapClickHandler onPick={handleMapPick} />
+              <CircleMarker center={mapCenter} radius={16} pathOptions={{ color: '#22d3ee', weight: 1, fillColor: '#22d3ee', fillOpacity: 0.12 }} />
+              <CircleMarker center={mapCenter} radius={6} pathOptions={{ color: '#04070d', weight: 2, fillColor: '#67e8f9', fillOpacity: 1 }} />
             </MapContainer>
+            <div className="pointer-events-none absolute right-3 top-3 z-[500] rounded-lg bg-ink-950/80 px-2 py-1 text-[10.5px] text-slate-300 backdrop-blur">
+              {t.mapHint}
+            </div>
           </div>
-          
-          <button
-            onClick={handleConfirm}
-            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold text-sm transition-all shadow-lg shadow-emerald-950/50 active:scale-98"
-          >
+        </div>
+
+        <div className="border-t border-white/[0.06] p-4">
+          <button type="button" onClick={handleConfirm} className="btn-primary w-full py-3">
+            <Icon name="check" className="h-4 w-4" />
             {t.confirmLocation}
           </button>
         </div>

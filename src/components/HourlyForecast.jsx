@@ -53,7 +53,7 @@ const WindChart = ({ rows, windUnit, t }) => {
   const hs = h ? STATUS[h.flightSafety?.status] || STATUS.bad : null;
 
   return (
-    <div className="pt-4">
+    <div className="px-4 py-4 sm:px-5">
       <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-[12px] text-ink-soft">
         <span className="flex items-center gap-2"><span className="h-[2px] w-5 bg-ink" />{t.chartWind}</span>
         <span className="flex items-center gap-2"><span className="h-2.5 w-5 bg-ink/10 ring-1 ring-inset ring-ink/40" />{t.chartGust}</span>
@@ -63,22 +63,22 @@ const WindChart = ({ rows, windUnit, t }) => {
 
       <div
         ref={ref}
-        className="relative h-48 w-full touch-pan-y select-none border-b border-l border-ink sm:h-56"
+        className="relative h-48 w-full touch-pan-y select-none border-b border-l border-line-strong sm:h-56"
         onPointerMove={onMove}
         onPointerDown={onMove}
         onPointerLeave={() => setHover(null)}
       >
         <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="absolute inset-0 h-full w-full overflow-visible">
           {ticks.map(({ i }) => (
-            <line key={i} x1={x(i)} x2={x(i)} y1="0" y2={H} stroke="#d3cdbf" vectorEffect="non-scaling-stroke" />
+            <line key={i} x1={x(i)} x2={x(i)} y1="0" y2={H} className="stroke-rule" vectorEffect="non-scaling-stroke" />
           ))}
-          <line x1="0" x2={W} y1={y(T.gust.caution)} y2={y(T.gust.caution)} stroke="#c98a1b" strokeWidth="1.5" strokeDasharray="6 4" vectorEffect="non-scaling-stroke" />
-          <line x1="0" x2={W} y1={y(T.gust.critical)} y2={y(T.gust.critical)} stroke="#b3261e" strokeWidth="1.5" strokeDasharray="6 4" vectorEffect="non-scaling-stroke" />
-          <path d={band} fill="rgba(22,21,15,0.09)" />
-          <path d={gustPath} fill="none" stroke="rgba(22,21,15,0.45)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-          <path d={windPath} fill="none" stroke="#16150f" strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+          <line x1="0" x2={W} y1={y(T.gust.caution)} y2={y(T.gust.caution)} className="stroke-caution-bright" strokeWidth="1.5" strokeDasharray="6 4" vectorEffect="non-scaling-stroke" />
+          <line x1="0" x2={W} y1={y(T.gust.critical)} y2={y(T.gust.critical)} className="stroke-nogo" strokeWidth="1.5" strokeDasharray="6 4" vectorEffect="non-scaling-stroke" />
+          <path d={band} className="fill-ink/10" />
+          <path d={gustPath} fill="none" className="stroke-ink/40" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+          <path d={windPath} fill="none" className="stroke-ink" strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
           {hover !== null && (
-            <line x1={x(hover)} x2={x(hover)} y1="0" y2={H} stroke="#e8550f" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+            <line x1={x(hover)} x2={x(hover)} y1="0" y2={H} className="stroke-signal" strokeWidth="1" vectorEffect="non-scaling-stroke" />
           )}
         </svg>
 
@@ -91,7 +91,7 @@ const WindChart = ({ rows, windUnit, t }) => {
 
         {h && (
           <div
-            className="pointer-events-none absolute top-2 z-10 w-44 border border-ink bg-paper p-2.5 text-[12px]"
+            className="pointer-events-none absolute top-2 z-10 w-44 rounded-lg border border-rule bg-surface p-2.5 text-[12px] shadow-lg shadow-black/20"
             style={{
               left: `${hoverLeftPct}%`,
               transform: `translateX(${hoverLeftPct > 65 ? 'calc(-100% - 10px)' : '10px'})`
@@ -109,7 +109,7 @@ const WindChart = ({ rows, windUnit, t }) => {
       </div>
 
       {/* Flyability strip */}
-      <div className="mt-1.5 flex h-3 w-full gap-px">
+      <div className="mt-1.5 flex h-2.5 w-full gap-px overflow-hidden rounded-sm">
         {rows.map((r, i) => (
           <span
             key={r.time}
@@ -159,20 +159,21 @@ const HourlyForecast = ({ hourlyData, language, windUnit = 'km/h' }) => {
   };
 
   return (
-    <section>
-      <div className="section-title flex-wrap">
-        <span className="num">03</span>
-        <h2>{t.sectionHourly}</h2>
-        <span className="hidden font-mono text-[12px] text-ink-faint sm:inline">{format(t.hoursForecast, { n: days * 24 })}</span>
+    <section className="panel">
+      <div className="panel-head">
+        <div>
+          <h2 className="panel-title">{t.sectionHourly} <span className="ml-1 font-mono text-[12px] font-normal text-ink-faint">{format(t.hoursForecast, { n: days * 24 })}</span></h2>
+          <p className="panel-sub">{t.sectionHourlySub}</p>
+        </div>
         <div className="ml-auto flex items-center gap-3">
-          <div className="flex" role="group">
+          <div className="seg" role="group">
             {[1, 2, 3].map(d => (
-              <button key={d} type="button" aria-pressed={days === d} onClick={() => setDays(d)} className="toggle">
+              <button key={d} type="button" aria-pressed={days === d} onClick={() => setDays(d)}>
                 {t[`day${d}`]}
               </button>
             ))}
           </div>
-          <button type="button" onClick={handleExport} className="btn py-1" title={t.exportJsonTitle}>
+          <button type="button" onClick={handleExport} className="btn" title={t.exportJsonTitle}>
             <Icon name="download" className="h-3.5 w-3.5" />
             {t.exportJson}
           </button>
@@ -181,9 +182,9 @@ const HourlyForecast = ({ hourlyData, language, windUnit = 'km/h' }) => {
 
       <WindChart rows={displayData} windUnit={windUnit} t={t} />
 
-      <div className="thin-scrollbar mt-6 max-h-[28rem] overflow-auto border-t border-ink">
+      <div className="thin-scrollbar max-h-[28rem] overflow-auto border-t border-rule">
         <table className="ruled-table w-full text-[14px]">
-          <thead className="sticky top-0 z-[1] bg-paper">
+          <thead className="sticky top-0 z-[1] bg-surface">
             <tr>
               <th>{t.time}</th>
               <th>{t.condition}</th>
@@ -202,7 +203,7 @@ const HourlyForecast = ({ hourlyData, language, windUnit = 'km/h' }) => {
               return [
                 newDay && (
                   <tr key={`d-${row.date}`}>
-                    <td colSpan={7} className="!border-b-ink bg-paper-deep !py-1.5 font-cond text-[12.5px] font-semibold uppercase tracking-[0.08em]">
+                    <td colSpan={7} className="bg-paper-deep !py-1.5 font-cond text-[12.5px] font-semibold uppercase tracking-[0.08em]">
                       {formatDay(row.date, localeCode)}
                     </td>
                   </tr>

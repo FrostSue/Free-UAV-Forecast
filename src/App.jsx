@@ -39,14 +39,14 @@ const detectLanguage = () => {
 
 const LoadingState = ({ t }) => (
   <div className="pt-10">
-    <div className="h-12 w-2/3 max-w-md bg-paper-deep" />
+    <div className="h-12 w-2/3 max-w-md animate-pulse rounded-lg bg-paper-deep" />
     <p className="mt-4 font-mono text-[13px] text-ink-soft">{t.loading}</p>
     <p className="text-[13px] text-ink-faint">{t.loadingSub}</p>
-    <div className="mt-10 grid grid-cols-2 border-l border-t border-rule sm:grid-cols-3 lg:grid-cols-4">
+    <div className="panel mt-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
       {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className="h-[132px] border-b border-r border-rule p-4">
-          <div className="h-3 w-1/2 bg-paper-deep" />
-          <div className="mt-4 h-7 w-2/3 bg-paper-deep" />
+        <div key={i} className="h-[128px] border-b border-r border-rule p-4">
+          <div className="h-3 w-1/2 animate-pulse rounded bg-paper-deep" />
+          <div className="mt-4 h-7 w-2/3 animate-pulse rounded bg-paper-deep" />
         </div>
       ))}
     </div>
@@ -54,8 +54,8 @@ const LoadingState = ({ t }) => (
 );
 
 const ErrorState = ({ t, message, onRetry, onChoose }) => (
-  <div className="mt-10 max-w-xl border-l-4 border-nogo pl-5">
-    <h2 className="font-cond text-[28px] font-bold uppercase tracking-[0.02em]">{t.errorTitle}</h2>
+  <div className="panel mt-10 max-w-xl border-l-4 border-l-nogo p-6">
+    <h2 className="font-cond text-[26px] font-bold uppercase tracking-[0.02em]">{t.errorTitle}</h2>
     <p className="mt-1 text-[15px] text-ink-soft">{message}</p>
     <div className="mt-5 flex flex-wrap gap-2">
       <button type="button" onClick={onRetry} className="btn-solid">{t.retry}</button>
@@ -65,7 +65,7 @@ const ErrorState = ({ t, message, onRetry, onChoose }) => (
 );
 
 const Footer = ({ t }) => (
-  <footer className="mt-16 grid gap-3 border-t border-ink pt-4 text-[12.5px] text-ink-soft sm:grid-cols-2">
+  <footer className="mt-12 grid gap-3 border-t border-rule pt-5 text-[12.5px] text-ink-soft sm:grid-cols-2">
     <p className="max-w-md leading-relaxed">{t.footerDisclaimer}</p>
     <p className="leading-relaxed sm:text-right">
       <span className="label mr-2">{t.footerSources}</span>
@@ -80,6 +80,9 @@ const Footer = ({ t }) => (
 const App = () => {
   const [language, setLanguageState] = useState(detectLanguage);
   const [windUnit, setWindUnitState] = useState(() => readPref('uav_wind_unit', WIND_UNITS.KMH, VALID_UNITS));
+  const [theme, setThemeState] = useState(() =>
+    typeof document !== 'undefined' && document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { loading, error, locationName, coords, weatherData, updatedAt, fetchWeather, refresh } = useWeatherData(language);
   const t = getLocale(language);
@@ -93,6 +96,16 @@ const App = () => {
     setWindUnitState(unit);
     writePref('uav_wind_unit', unit);
   }, []);
+
+  const setTheme = useCallback((next) => {
+    setThemeState(next);
+    writePref('uav_theme', next);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#090c13' : '#e9e7e1');
+  }, [theme]);
 
   const openModal = useCallback(() => setIsModalOpen(true), []);
   const closeModal = useCallback(() => setIsModalOpen(false), []);
@@ -121,13 +134,15 @@ const App = () => {
         setLanguage={setLanguage}
         windUnit={windUnit}
         setWindUnit={setWindUnit}
+        theme={theme}
+        setTheme={setTheme}
         onRefresh={refresh}
         loading={loading}
       />
 
       <main className="mx-auto max-w-[1200px] px-4 pb-10 sm:px-6">
         {weatherData && error && (
-          <div className="mt-4 flex items-center gap-3 border-l-4 border-caution bg-caution-soft px-3 py-2 text-[13px]">
+          <div className="mt-4 flex items-center gap-3 rounded-lg border border-caution/30 bg-caution-soft px-3 py-2 text-[13px]">
             <span className="flex-1">{errorMessage}</span>
             <button type="button" onClick={refresh} className="font-semibold underline underline-offset-2">{t.retry}</button>
           </div>
@@ -148,7 +163,7 @@ const App = () => {
               updatedAt={updatedAt}
               onChangeLocation={openModal}
             />
-            <div className="space-y-14">
+            <div className="space-y-5">
               <FlightStatus data={weatherData.current} language={language} windUnit={windUnit} />
               <MetricsGrid data={weatherData.current} language={language} windUnit={windUnit} />
               <HourlyForecast hourlyData={weatherData.hourlyForecast} language={language} windUnit={windUnit} />

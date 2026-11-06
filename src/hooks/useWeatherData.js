@@ -122,6 +122,8 @@ export const processForecast = (data, kpResult, satResult) => {
     current: {
       time: current.time,
       timezone: data.timezone,
+      timezoneAbbr: data.timezone_abbreviation || null,
+      utcOffsetSeconds: toNumber(data.utc_offset_seconds, 0),
       weatherCode: current.weather_code,
       isDay: current.is_day === undefined ? true : current.is_day === 1,
       sunrise: wallClock(daily.sunrise?.[0]),

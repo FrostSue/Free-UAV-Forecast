@@ -68,7 +68,7 @@ const BriefingHeader = ({ data, coords, locationName, language, windUnit, update
   };
 
   return (
-    <section className="pb-6 pt-8 sm:pt-10">
+    <section className="pb-5 pt-8 sm:pt-10">
       <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
         <div className="min-w-0">
           <button
@@ -80,7 +80,7 @@ const BriefingHeader = ({ data, coords, locationName, language, windUnit, update
             <span className="block truncate font-cond text-[40px] font-bold leading-[1.05] tracking-[-0.01em] sm:text-[56px]">
               {locationName || t.loading}
             </span>
-            <span className="mt-1 inline-flex items-center gap-2 text-[13px] text-ink-soft underline decoration-rule decoration-1 underline-offset-4 group-hover:decoration-ink">
+            <span className="mt-1 inline-flex items-center gap-2 text-[13px] text-ink-soft underline decoration-line-strong decoration-1 underline-offset-4 group-hover:text-ink group-hover:decoration-ink">
               {t.changeLocation} →
             </span>
           </button>
@@ -103,15 +103,15 @@ const BriefingHeader = ({ data, coords, locationName, language, windUnit, update
       </div>
 
       {line && (
-        <div className="mt-6 flex items-stretch border border-ink">
-          <span className="label hidden items-center border-r border-ink px-3 sm:flex">{t.briefingLine}</span>
+        <div className="mt-6 flex items-stretch overflow-hidden rounded-lg border border-rule bg-surface">
+          <span className="label hidden items-center border-r border-rule px-3 sm:flex">{t.briefingLine}</span>
           <code className="thin-scrollbar flex-1 overflow-x-auto whitespace-nowrap px-3 py-2.5 font-mono text-[13px] tracking-tight">
             {line}
           </code>
           <button
             type="button"
             onClick={copy}
-            className="border-l border-ink px-3 font-cond text-[12px] font-semibold uppercase tracking-[0.06em] transition-colors hover:bg-ink hover:text-paper"
+            className="border-l border-rule px-3 font-cond text-[12px] font-semibold uppercase tracking-[0.06em] text-ink-soft transition-colors hover:bg-paper-deep hover:text-ink"
           >
             {copied ? t.copied : t.copyBriefing}
           </button>

@@ -1,126 +1,95 @@
-import { useState } from 'react';
-import { locales } from '../utils/locales';
-import { convertWindSpeed } from '../utils/units';
+import { getLocale } from '../utils/locales';
+import { formatWindSpeed } from '../utils/units';
+import { SAFETY_THRESHOLDS as T, classifyWind, toNumber } from '../utils/flightSafety';
+import Icon from './Icon';
+import InfoTip from './InfoTip';
 
-const WindProfile = (props) => {
-  const language = props.language || 'tr';
-  const windUnit = props.windUnit || 'km/h';
-  const t = locales[language] || locales['tr'];
-  const [showTooltip, setShowTooltip] = useState(false);
-  
-  const activeData = props.data || props.windProfileData || props.windProfile || props.profileData;
+const STATUS = {
+  good: { pill: 'pill-good', key: 'yes', bar: 'from-emerald-400/90 to-emerald-300/90' },
+  caution: { pill: 'pill-caution', key: 'caution', bar: 'from-amber-400/90 to-amber-300/90' },
+  bad: { pill: 'pill-bad', key: 'no', bar: 'from-rose-400/90 to-rose-300/90' }
+};
 
-  if (!activeData || !Array.isArray(activeData) || activeData.length === 0) return null;
+const WindProfile = ({ profileData, language = 'tr', windUnit = 'km/h' }) => {
+  const t = getLocale(language);
+  if (!Array.isArray(profileData) || profileData.length === 0) return null;
 
-  const getTierFlyStatus = (gust) => {
-    const g = parseFloat(gust || 0);
-    if (g < 25) return { text: t.yes, color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' };
-    if (g < 35) return { text: t.caution, color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' };
-    return { text: t.no, color: 'bg-red-500/20 text-red-400 border-red-500/30' };
-  };
+  // Highest altitude on top, like a real atmospheric sounding
+  const tiers = [...profileData].sort((a, b) => b.altitudeMeters - a.altitudeMeters);
+  const maxKmh = Math.max(T.gust.critical + 10, ...tiers.map(r => toNumber(r.gustSpeedKmh, 0))) * 1.05;
+  const pct = (v) => `${(toNumber(v, 0) / maxKmh) * 100}%`;
 
   return (
-    <div className="p-4 md:p-5 pt-0">
-      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl overflow-hidden backdrop-blur-md">
-        {/* Title Bar with Circular Exclamation Button */}
-        <div className="p-4 bg-slate-850 border-b border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <span className="text-lg">📈</span>
-            <h3 className="font-bold text-white text-base md:text-lg tracking-tight">
-              {t.windProfile}
-            </h3>
-            
-            {/* Interactive Info Icon Button (Circle with Exclamation Mark) */}
-            <div className="relative inline-flex items-center">
-              <button
-                type="button"
-                onClick={() => setShowTooltip(prev => !prev)}
-                onMouseEnter={() => setShowTooltip(true)}
-                onMouseLeave={() => setShowTooltip(false)}
-                className="w-5 h-5 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-amber-400/80 text-amber-400 flex items-center justify-center transition-all shadow-sm focus:outline-none cursor-pointer"
-                aria-label="Model Bilgisi"
-              >
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
-              </button>
-
-              {/* 100% Solid Opaque Tooltip Card (Zero Background Transparency Bleed) */}
-              {showTooltip && (
-                <div 
-                  className="absolute left-0 top-full mt-2.5 w-80 max-w-[calc(100vw-3rem)] p-4 bg-slate-950 border border-slate-700 rounded-xl shadow-2xl shadow-black/80 text-xs text-slate-100 z-50 animate-in fade-in zoom-in-95 duration-150"
-                  onMouseEnter={() => setShowTooltip(true)}
-                  onMouseLeave={() => setShowTooltip(false)}
-                >
-                  {/* Upward pointer arrow */}
-                  <div className="absolute -top-1.5 left-2 w-3 h-3 bg-slate-950 border-t border-l border-slate-700 rotate-45 pointer-events-none"></div>
-
-                  <div className="flex items-center gap-2 text-amber-400 font-bold mb-2 pb-1.5 border-b border-slate-800">
-                    <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10" />
-                      <line x1="12" y1="8" x2="12" y2="12" />
-                      <line x1="12" y1="16" x2="12.01" y2="16" />
-                    </svg>
-                    <span>{t.windProfileTooltipTitle}</span>
-                  </div>
-                  <p className="leading-relaxed text-slate-200 text-[11px] mb-2.5 font-normal">
-                    {t.windProfileTooltipDesc}
-                  </p>
-                  <div className="bg-slate-900 p-2.5 rounded-lg border border-slate-800 text-center font-mono text-emerald-400 font-bold text-xs">
-                    {t.windProfileFormula}
-                  </div>
+    <section className="panel overflow-hidden animate-fade-up">
+      <div className="panel-header">
+        <div className="flex items-center gap-3">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-400/10 text-brand-300 ring-1 ring-brand-400/15">
+            <Icon name="layers" className="h-4 w-4" />
+          </span>
+          <div>
+            <div className="flex items-center gap-1.5">
+              <h3 className="font-display text-base font-semibold text-white sm:text-lg">{t.windProfile}</h3>
+              <InfoTip title={t.windProfileTooltipTitle} label={t.windProfileTooltipTitle}>
+                <p className="mb-2.5">{t.windProfileTooltipDesc}</p>
+                <div className="rounded-lg border border-white/[0.06] bg-ink-950/70 p-2 text-center font-mono text-[12px] font-semibold text-brand-300">
+                  {t.windProfileFormula}
                 </div>
-              )}
+              </InfoTip>
             </div>
+            <p className="text-[11.5px] text-slate-500">{t.windProfileSubtitle}</p>
           </div>
         </div>
-
-        {/* Profile Table */}
-        <div className="w-full overflow-x-auto custom-scrollbar">
-          <table className="w-full text-xs md:text-sm text-center text-slate-300 divide-y divide-slate-800">
-            <thead className="text-[11px] font-bold text-slate-400 bg-slate-900/95 uppercase tracking-wider">
-              <tr>
-                <th className="px-3 py-3 border-r border-slate-800">{t.altitudeAgl}</th>
-                <th className="px-3 py-3 border-r border-slate-800">{t.windSpeedProfile} ({windUnit})</th>
-                <th className="px-3 py-3 border-r border-slate-800">{t.gustSpeedProfile} ({windUnit})</th>
-                <th className="px-3 py-3 border-r border-slate-800">{t.temperature}</th>
-                <th className="px-3 py-3">{t.fly}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60 font-medium">
-              {activeData.map((tier, index) => {
-                const status = getTierFlyStatus(tier.gustSpeed);
-                return (
-                  <tr key={index} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="px-3 py-2.5 border-r border-slate-800/60 font-bold text-slate-100 font-mono">
-                      <span className="px-2 py-0.5 rounded-md bg-slate-800 border border-slate-700">
-                        {t[tier.altitudeKey] || tier.altitudeKey}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2.5 border-r border-slate-800/60 text-slate-200 font-mono">
-                      {convertWindSpeed(tier.windSpeedKmh ?? tier.windSpeed, windUnit, 1)} {windUnit}
-                    </td>
-                    <td className="px-3 py-2.5 border-r border-slate-800/60 text-white font-bold font-mono">
-                      {convertWindSpeed(tier.gustSpeedKmh ?? tier.gustSpeed, windUnit, 1)} {windUnit}
-                    </td>
-                    <td className="px-3 py-2.5 border-r border-slate-800/60 text-slate-300">
-                      {tier.temperature}°C
-                    </td>
-                    <td className="px-3 py-2.5">
-                      <span className={`inline-block px-2.5 py-0.5 rounded-full border text-[11px] font-bold ${status.color}`}>
-                        {status.text}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div className="flex items-center gap-3 text-[11px] text-slate-500">
+          <span className="flex items-center gap-1.5"><span className="h-2 w-4 rounded-sm bg-emerald-400/90" />{t.windSpeedProfile}</span>
+          <span className="flex items-center gap-1.5"><span className="h-2 w-4 rounded-sm bg-white/[0.12]" />{t.gustSpeedProfile}</span>
         </div>
       </div>
-    </div>
+
+      <div className="hidden grid-cols-[132px_1fr_150px_64px_76px] gap-3 border-b border-white/[0.04] px-5 py-2 md:grid">
+        <span className="eyebrow">{t.altitudeAgl}</span>
+        <span className="eyebrow" />
+        <span className="eyebrow text-right">{t.windSpeedProfile} / {t.gustSpeedProfile}</span>
+        <span className="eyebrow text-right">{t.temperature}</span>
+        <span className="eyebrow text-center">{t.fly}</span>
+      </div>
+
+      <ul className="divide-y divide-white/[0.04]">
+        {tiers.map(tier => {
+          const status = STATUS[classifyWind(tier.gustSpeedKmh, tier.windSpeedKmh)];
+          return (
+            <li
+              key={tier.altitudeKey}
+              className="grid grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-1.5 px-4 py-2.5 transition-colors hover:bg-white/[0.02] sm:px-5 md:grid-cols-[132px_1fr_150px_64px_76px]"
+            >
+              <span className="whitespace-nowrap font-mono text-[12px] font-semibold text-slate-200">
+                {t[tier.altitudeKey] || `${tier.altitudeMeters} m`}
+              </span>
+
+              {/* bar */}
+              <div className="relative col-span-2 row-start-2 h-2.5 rounded-full bg-white/[0.04] md:col-span-1 md:row-start-auto">
+                <div className="absolute inset-y-0 left-0 rounded-full bg-white/[0.12]" style={{ width: pct(tier.gustSpeedKmh) }} />
+                <div className={`absolute inset-y-0 left-0 rounded-full bg-gradient-to-r ${status.bar}`} style={{ width: pct(tier.windSpeedKmh) }} />
+                <span className="absolute -inset-y-1 w-px bg-amber-400/50" style={{ left: pct(T.gust.caution) }} />
+                <span className="absolute -inset-y-1 w-px bg-rose-400/50" style={{ left: pct(T.gust.critical) }} />
+              </div>
+
+              <span className="text-right font-mono text-[12.5px] tabular">
+                <span className="text-slate-300">{formatWindSpeed(tier.windSpeedKmh, windUnit, 1)}</span>
+                <span className="mx-1 text-slate-600">/</span>
+                <span className="font-semibold text-white">{formatWindSpeed(tier.gustSpeedKmh, windUnit, 1)}</span>
+                <span className="ml-1 text-[10.5px] text-slate-500">{windUnit}</span>
+              </span>
+
+              <span className="hidden text-right font-mono text-[12.5px] text-slate-400 tabular md:block">{tier.temperature}°</span>
+
+              <span className="hidden text-center md:block">
+                <span className={`pill ${status.pill}`}>{t[status.key]}</span>
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 };
 

@@ -1,132 +1,252 @@
-import { useState } from 'react';
-import { locales } from '../utils/locales';
-import { convertWindSpeed } from '../utils/units';
+import { useState, useMemo, useRef } from 'react';
+import { getLocale, format } from '../utils/locales';
+import { convertWindSpeed, formatWindSpeed } from '../utils/units';
+import { SAFETY_THRESHOLDS as T, toNumber } from '../utils/flightSafety';
+import { describeWeatherCode } from '../utils/weatherCodes';
+import Icon from './Icon';
 
-const HourlyForecast = ({ data, hourlyData, language, windUnit = 'km/h' }) => {
-  const activeData = hourlyData || data;
-  const t = locales[language] || locales['tr'];
+const STATUS = {
+  good: { pill: 'pill-good', cell: 'bg-emerald-400/70', key: 'yes' },
+  caution: { pill: 'pill-caution', cell: 'bg-amber-400/80', key: 'caution' },
+  bad: { pill: 'pill-bad', cell: 'bg-rose-400/80', key: 'no' }
+};
+
+const formatDay = (dateStr, localeCode) => {
+  // dateStr is "YYYY-MM-DD" at the location; build a UTC date to avoid browser TZ drift.
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(localeCode, {
+    weekday: 'short', day: '2-digit', month: 'short', timeZone: 'UTC'
+  });
+};
+
+const WindChart = ({ rows, windUnit, t }) => {
+  const [hover, setHover] = useState(null);
+  const ref = useRef(null);
+  const n = rows.length;
+  const W = 1000;
+  const H = 180;
+  const PAD_TOP = 12;
+
+  const maxKmh = Math.max(T.gust.critical + 8, ...rows.map(r => toNumber(r.windGustsKmh, 0))) * 1.08;
+  const x = (i) => (n <= 1 ? W / 2 : (i / (n - 1)) * W);
+  const y = (v) => PAD_TOP + (1 - toNumber(v, 0) / maxKmh) * (H - PAD_TOP);
+
+  const line = (key) => rows.map((r, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(r[key]).toFixed(1)}`).join(' ');
+  const gustPath = line('windGustsKmh');
+  const windPath = line('windSpeedKmh');
+  const area = `${gustPath} L${W},${H} L0,${H} Z`;
+
+  const tickEvery = n > 48 ? 12 : n > 24 ? 6 : 3;
+  const ticks = rows.map((r, i) => ({ i, r })).filter(({ i }) => i % tickEvery === 0);
+
+  const onMove = (e) => {
+    const rect = ref.current?.getBoundingClientRect();
+    if (!rect) return;
+    const px = (e.clientX - rect.left) / rect.width;
+    setHover(Math.max(0, Math.min(n - 1, Math.round(px * (n - 1)))));
+  };
+
+  const h = hover !== null ? rows[hover] : null;
+  const hoverLeftPct = hover !== null ? (x(hover) / W) * 100 : 0;
+
+  return (
+    <div className="px-4 pb-2 pt-4 sm:px-5">
+      <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-500">
+        <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 rounded bg-brand-300" />{t.chartWind}</span>
+        <span className="flex items-center gap-1.5"><span className="h-2 w-4 rounded-sm bg-brand-400/25 ring-1 ring-brand-300/40" />{t.chartGust}</span>
+        <span className="flex items-center gap-1.5"><span className="h-0 w-4 border-t border-dashed border-amber-400/70" />{t.thresholdCaution}</span>
+        <span className="flex items-center gap-1.5"><span className="h-0 w-4 border-t border-dashed border-rose-400/70" />{t.thresholdCritical}</span>
+      </div>
+
+      <div
+        ref={ref}
+        className="relative h-44 w-full touch-pan-y select-none"
+        onPointerMove={onMove}
+        onPointerDown={onMove}
+        onPointerLeave={() => setHover(null)}
+      >
+        <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="absolute inset-0 h-full w-full overflow-visible">
+          <defs>
+            <linearGradient id="gustFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#22d3ee" stopOpacity="0.28" />
+              <stop offset="1" stopColor="#22d3ee" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          {[0.25, 0.5, 0.75].map(f => (
+            <line key={f} x1="0" x2={W} y1={PAD_TOP + f * (H - PAD_TOP)} y2={PAD_TOP + f * (H - PAD_TOP)} stroke="rgba(148,163,184,0.08)" vectorEffect="non-scaling-stroke" />
+          ))}
+          <line x1="0" x2={W} y1={y(T.gust.caution)} y2={y(T.gust.caution)} stroke="rgba(251,191,36,0.6)" strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />
+          <line x1="0" x2={W} y1={y(T.gust.critical)} y2={y(T.gust.critical)} stroke="rgba(251,113,133,0.6)" strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />
+          <path d={area} fill="url(#gustFill)" />
+          <path d={gustPath} fill="none" stroke="rgba(103,232,249,0.55)" strokeWidth="1.25" vectorEffect="non-scaling-stroke" />
+          <path d={windPath} fill="none" stroke="#67e8f9" strokeWidth="2.25" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+          {hover !== null && (
+            <line x1={x(hover)} x2={x(hover)} y1="0" y2={H} stroke="rgba(226,232,240,0.35)" vectorEffect="non-scaling-stroke" />
+          )}
+        </svg>
+
+        {/* threshold labels */}
+        <span className="pointer-events-none absolute right-0 -translate-y-full pb-0.5 font-mono text-[9.5px] text-amber-300/80" style={{ top: `${(y(T.gust.caution) / H) * 100}%` }}>
+          {convertWindSpeed(T.gust.caution, windUnit, windUnit === 'km/h' ? 0 : 1)} {windUnit}
+        </span>
+        <span className="pointer-events-none absolute right-0 -translate-y-full pb-0.5 font-mono text-[9.5px] text-rose-300/80" style={{ top: `${(y(T.gust.critical) / H) * 100}%` }}>
+          {convertWindSpeed(T.gust.critical, windUnit, windUnit === 'km/h' ? 0 : 1)} {windUnit}
+        </span>
+
+        {h && (
+          <div
+            className="pointer-events-none absolute top-0 z-10 w-40 rounded-xl border border-white/10 bg-ink-850/95 p-2.5 text-[11px] shadow-xl backdrop-blur"
+            style={{
+              left: `${hoverLeftPct}%`,
+              transform: `translateX(${hoverLeftPct > 70 ? 'calc(-100% - 10px)' : '10px'})`
+            }}
+          >
+            <div className="mb-1 flex items-center justify-between font-mono text-slate-300">
+              <span>{h.hour}</span>
+              <span className={`pill ${STATUS[h.flightSafety?.status]?.pill || 'pill-bad'}`}>{t[STATUS[h.flightSafety?.status]?.key || 'no']}</span>
+            </div>
+            <div className="flex justify-between text-slate-400"><span>{t.chartWind}</span><span className="font-mono text-white">{formatWindSpeed(h.windSpeedKmh, windUnit, 1)}</span></div>
+            <div className="flex justify-between text-slate-400"><span>{t.chartGust}</span><span className="font-mono text-white">{formatWindSpeed(h.windGustsKmh, windUnit, 1)}</span></div>
+            <div className="flex justify-between text-slate-400"><span>{t.precipProb}</span><span className="font-mono text-white">{h.precipProb}%</span></div>
+          </div>
+        )}
+      </div>
+
+      {/* Flyability strip */}
+      <div className="mt-2 flex h-2 w-full gap-px overflow-hidden rounded-full">
+        {rows.map((r, i) => (
+          <span
+            key={r.time}
+            className={`flex-1 ${STATUS[r.flightSafety?.status]?.cell || 'bg-rose-400/80'} ${hover === i ? 'opacity-100' : 'opacity-80'}`}
+          />
+        ))}
+      </div>
+
+      <div className="relative mt-1.5 h-4 font-mono text-[10px] text-slate-500">
+        {ticks.map(({ i, r }) => (
+          <span
+            key={r.time}
+            className="absolute -translate-x-1/2 whitespace-nowrap first:translate-x-0"
+            style={{ left: `${(x(i) / W) * 100}%` }}
+          >
+            {r.hour}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const HourlyForecast = ({ hourlyData, language, windUnit = 'km/h' }) => {
+  const t = getLocale(language);
   const [days, setDays] = useState(1);
   const localeCode = language === 'tr' ? 'tr-TR' : 'en-US';
 
-  if (!activeData || !Array.isArray(activeData) || activeData.length === 0) return null;
+  const displayData = useMemo(
+    () => (Array.isArray(hourlyData) ? hourlyData.slice(0, days * 24) : []),
+    [hourlyData, days]
+  );
 
-  const displayData = activeData.slice(0, days * 24);
+  if (displayData.length === 0) return null;
 
   const handleExport = () => {
-    const dataStr = JSON.stringify(displayData, null, 2);
-    const blob = new Blob([dataStr], { type: "application/json" });
+    const blob = new Blob([JSON.stringify(displayData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     link.href = url;
-    link.download = `uav_forecast_${days}day.json`;
+    link.download = `uav_forecast_${days * 24}h.json`;
+    document.body.appendChild(link);
     link.click();
-    URL.revokeObjectURL(url);
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
-
-  const getStatusBadge = (row) => {
-    const safety = row.flightSafety;
-    if (safety) {
-      if (safety.status === 'good') return { text: t.yes, color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' };
-      if (safety.status === 'caution') return { text: t.caution, color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' };
-      return { text: t.no, color: 'bg-red-500/20 text-red-400 border-red-500/30' };
-    }
-
-    const g = parseFloat(row.windGusts || 0);
-    const p = parseFloat(row.precipProb || 0);
-    if (g < 25 && p < 20) return { text: t.yes, color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' };
-    if (g < 35 && p < 40) return { text: t.caution, color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' };
-    return { text: t.no, color: 'bg-red-500/20 text-red-400 border-red-500/30' };
-  };
-
-  const dynamicForecastTitle = language === 'tr' 
-    ? `${days * 24} Saatlik Detaylı Tahmin`
-    : `${days * 24}-Hour Detailed Forecast`;
 
   return (
-    <div className="p-4 md:p-5">
-      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl overflow-hidden backdrop-blur-md">
-        {/* Header & Controls Bar */}
-        <div className="p-4 bg-slate-850 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-lg">📅</span>
-            <h3 className="font-bold text-white text-base md:text-lg tracking-tight transition-all">
-              {dynamicForecastTitle}
+    <section className="panel overflow-hidden animate-fade-up">
+      <div className="panel-header">
+        <div className="flex items-center gap-3">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-400/10 text-brand-300 ring-1 ring-brand-400/15">
+            <Icon name="chart" className="h-4 w-4" />
+          </span>
+          <div>
+            <h3 className="font-display text-base font-semibold text-white sm:text-lg">
+              {format(t.hoursForecast, { n: days * 24 })}
             </h3>
-          </div>
-
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* Day Segment Control */}
-            <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800">
-              {[1, 2, 3].map((d) => (
-                <button
-                  key={d}
-                  onClick={() => setDays(d)}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                    days === d
-                      ? 'bg-emerald-600 text-white shadow-md'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                  }`}
-                >
-                  {t[`day${d}`]}
-                </button>
-              ))}
-            </div>
-
-            {/* Export JSON Button */}
-            <button
-              onClick={handleExport}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600/90 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl transition-all shadow-md active:scale-95 border border-blue-400/30"
-            >
-              <span>⬇</span>
-              <span>{t.exportJson}</span>
-            </button>
+            <p className="text-[11.5px] text-slate-500">{t.hourlySubtitle}</p>
           </div>
         </div>
 
-        {/* Scrollable Forecast Table */}
-        <div className="w-full overflow-x-auto custom-scrollbar max-h-96">
-          <table className="w-full text-xs md:text-sm text-center text-slate-300 divide-y divide-slate-800">
-            <thead className="text-[11px] font-bold text-slate-400 bg-slate-900/95 sticky top-0 uppercase tracking-wider backdrop-blur-sm z-10">
-              <tr>
-                <th className="px-3 py-3 border-r border-slate-800">{t.date}</th>
-                <th className="px-3 py-3 border-r border-slate-800">{t.time}</th>
-                <th className="px-3 py-3 border-r border-slate-800">{t.temperature}</th>
-                <th className="px-3 py-3 border-r border-slate-800">{t.precipProb}</th>
-                <th className="px-3 py-3 border-r border-slate-800">{t.windGustCol} ({windUnit})</th>
-                <th className="px-3 py-3 border-r border-slate-800">{t.cloudCover}</th>
-                <th className="px-3 py-3">{t.fly}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60 font-medium">
-              {displayData.map((row, index) => {
-                const dateObj = new Date(row.time);
-                const dateStr = dateObj.toLocaleDateString(localeCode, { day: '2-digit', month: '2-digit' });
-                const timeStr = dateObj.toLocaleTimeString(localeCode, { hour: '2-digit', minute: '2-digit' });
-                const status = getStatusBadge(row);
-
-                return (
-                  <tr key={index} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="px-3 py-2.5 border-r border-slate-800/60 text-slate-400">{dateStr}</td>
-                    <td className="px-3 py-2.5 border-r border-slate-800/60 font-semibold text-white font-mono">{timeStr}</td>
-                    <td className="px-3 py-2.5 border-r border-slate-800/60 text-slate-200">{row.temperature}°C</td>
-                    <td className="px-3 py-2.5 border-r border-slate-800/60 text-slate-200">{row.precipProb}%</td>
-                    <td className="px-3 py-2.5 border-r border-slate-800/60 text-slate-200 font-mono">
-                      {convertWindSpeed(row.windSpeedKmh ?? row.windSpeed, windUnit, 1)} / <span className="font-bold text-white">{convertWindSpeed(row.windGustsKmh ?? row.windGusts, windUnit, 1)}</span> {windUnit}
-                    </td>
-                    <td className="px-3 py-2.5 border-r border-slate-800/60 text-slate-400">{row.cloudCover}%</td>
-                    <td className="px-3 py-2.5">
-                      <span className={`inline-block px-2.5 py-0.5 rounded-full border text-[11px] font-bold ${status.color}`}>
-                        {status.text}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div className="flex items-center gap-2">
+          <div className="segmented" role="group">
+            {[1, 2, 3].map(d => (
+              <button key={d} type="button" aria-pressed={days === d} onClick={() => setDays(d)}>
+                {t[`day${d}`]}
+              </button>
+            ))}
+          </div>
+          <button type="button" onClick={handleExport} className="btn" title={t.exportJsonTitle}>
+            <Icon name="download" className="h-3.5 w-3.5" />
+            {t.exportJson}
+          </button>
         </div>
       </div>
-    </div>
+
+      <WindChart rows={displayData} windUnit={windUnit} t={t} />
+
+      <div className="max-h-[26rem] overflow-auto border-t border-white/[0.06] custom-scrollbar">
+        <table className="data-table w-full text-[13px]">
+          <thead className="sticky top-0 z-[1] bg-ink-900/95 backdrop-blur">
+            <tr>
+              <th>{t.time}</th>
+              <th>{t.condition}</th>
+              <th className="text-right">{t.temperature}</th>
+              <th className="text-right">{t.precipProb}</th>
+              <th className="text-right">{t.windGustCol} <span className="normal-case tracking-normal text-slate-600">({windUnit})</span></th>
+              <th className="text-right">{t.cloudCover}</th>
+              <th className="text-center">{t.fly}</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-white/[0.04]">
+            {displayData.map((row, index) => {
+              const status = STATUS[row.flightSafety?.status] || STATUS.bad;
+              const wx = describeWeatherCode(row.weatherCode, row.isDay);
+              const newDay = index === 0 || row.date !== displayData[index - 1].date;
+              return [
+                newDay && (
+                  <tr key={`d-${row.date}`} className="bg-white/[0.015]">
+                    <td colSpan={7} className="!py-1.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-brand-300/80">
+                      {formatDay(row.date, localeCode)}
+                    </td>
+                  </tr>
+                ),
+                <tr key={row.time} className="transition-colors hover:bg-white/[0.03]">
+                  <td className="font-mono font-semibold text-white">
+                    {index === 0 ? <span className="text-brand-300">{t.now}</span> : row.hour}
+                  </td>
+                  <td>
+                    <span className="flex items-center gap-2 text-slate-400">
+                      <Icon name={wx.icon} className="h-4 w-4 text-slate-300" />
+                      <span className="hidden text-[12px] md:inline">{t[wx.key]}</span>
+                    </span>
+                  </td>
+                  <td className="text-right font-mono text-slate-200 tabular">{toNumber(row.temperature, 0).toFixed(1)}°</td>
+                  <td className={`text-right font-mono tabular ${row.precipProb >= T.precip.caution ? 'text-amber-300' : 'text-slate-400'}`}>{row.precipProb}%</td>
+                  <td className="text-right font-mono tabular">
+                    <span className="text-slate-400">{formatWindSpeed(row.windSpeedKmh, windUnit, 1)}</span>
+                    <span className="mx-1 text-slate-600">/</span>
+                    <span className="font-semibold text-white">{formatWindSpeed(row.windGustsKmh, windUnit, 1)}</span>
+                  </td>
+                  <td className="text-right font-mono text-slate-500 tabular">{row.cloudCover}%</td>
+                  <td className="text-center">
+                    <span className={`pill ${status.pill}`}>{t[status.key]}</span>
+                  </td>
+                </tr>
+              ];
+            })}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 };
 

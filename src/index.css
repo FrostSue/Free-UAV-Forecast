@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    color-scheme: dark;
+    color-scheme: light;
   }
 
   html {
@@ -12,39 +12,16 @@
   }
 
   body {
-    @apply m-0 bg-ink-950 font-sans text-slate-200 antialiased;
-    background-image:
-      radial-gradient(1200px 600px at 10% -10%, rgba(34, 211, 238, 0.08), transparent 60%),
-      radial-gradient(900px 500px at 100% 0%, rgba(16, 185, 129, 0.06), transparent 60%);
-    background-attachment: fixed;
-    min-height: 100vh;
-  }
-
-  /* faint avionics grid behind everything */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    background-image:
-      linear-gradient(rgba(148, 163, 184, 0.035) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(148, 163, 184, 0.035) 1px, transparent 1px);
-    background-size: 44px 44px;
-    mask-image: radial-gradient(ellipse at 50% 0%, black 30%, transparent 75%);
-  }
-
-  #root {
-    position: relative;
-    z-index: 1;
+    @apply m-0 min-h-screen bg-paper font-sans text-ink antialiased;
+    font-feature-settings: 'ss02';
   }
 
   ::selection {
-    @apply bg-brand-500/40 text-white;
+    @apply bg-signal text-paper;
   }
 
   :focus-visible {
-    @apply outline-none ring-2 ring-brand-400/70 ring-offset-2 ring-offset-ink-950;
+    @apply outline-none ring-2 ring-ink ring-offset-2 ring-offset-paper;
   }
 
   input[type='number']::-webkit-inner-spin-button,
@@ -61,72 +38,59 @@
 }
 
 @layer components {
-  .panel {
-    @apply relative rounded-2xl border border-white/[0.06] bg-ink-900/70 shadow-panel backdrop-blur-xl;
+  /* Small-caps style label used for every field name on the briefing sheet */
+  .label {
+    @apply font-cond text-[11.5px] font-semibold uppercase tracking-[0.08em] text-ink-faint;
   }
 
-  .panel-header {
-    @apply flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.06] px-4 py-4 sm:px-5;
+  .section-title {
+    @apply flex items-baseline gap-3 border-b border-ink pb-2;
   }
 
-  .eyebrow {
-    @apply text-[10.5px] font-semibold uppercase tracking-[0.16em] text-slate-500;
+  .section-title > .num {
+    @apply font-mono text-[12px] text-ink-faint;
+  }
+
+  .section-title > h2,
+  .section-title > h3 {
+    @apply font-cond text-[19px] font-bold uppercase tracking-[0.04em] text-ink;
+  }
+
+  /* Text toggles (units, language, ranges) */
+  .toggle {
+    @apply px-1.5 py-1 font-mono text-[12px] text-ink-faint underline-offset-[6px] transition-colors hover:text-ink aria-pressed:font-semibold aria-pressed:text-ink aria-pressed:underline aria-pressed:decoration-2;
   }
 
   .btn {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-xs font-semibold text-slate-200 transition hover:border-white/[0.16] hover:bg-white/[0.07] active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-1.5 border border-ink bg-transparent px-3 py-1.5 font-cond text-[13px] font-semibold uppercase tracking-[0.06em] text-ink transition-colors hover:bg-ink hover:text-paper active:translate-y-px disabled:pointer-events-none disabled:opacity-40;
   }
 
-  .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-400 to-emerald-400 px-4 py-2.5 text-sm font-bold text-ink-950 shadow-glow transition hover:brightness-110 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50;
-  }
-
-  .icon-btn {
-    @apply inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.03] text-slate-300 transition hover:border-white/[0.16] hover:bg-white/[0.07] hover:text-white active:scale-95 disabled:opacity-50;
-  }
-
-  .segmented {
-    @apply inline-flex rounded-xl border border-white/[0.06] bg-ink-950/60 p-0.5;
-  }
-
-  .segmented > button {
-    @apply rounded-[10px] px-2.5 py-1.5 text-[11px] font-semibold text-slate-400 transition hover:text-white;
-  }
-
-  .segmented > button[aria-pressed='true'] {
-    @apply bg-white/[0.09] text-white shadow-sm;
+  .btn-solid {
+    @apply inline-flex items-center justify-center gap-2 border border-ink bg-ink px-4 py-2.5 font-cond text-[14px] font-semibold uppercase tracking-[0.08em] text-paper transition-colors hover:bg-ink-soft active:translate-y-px disabled:opacity-40;
   }
 
   .field {
-    @apply w-full rounded-xl border border-white/[0.08] bg-ink-950/70 px-3 py-2.5 text-sm text-white placeholder:text-slate-500 transition focus:border-brand-400/60 focus:outline-none focus:ring-2 focus:ring-brand-400/20;
+    @apply w-full border border-rule bg-paper px-3 py-2.5 text-[14px] text-ink placeholder:text-ink-faint transition-colors focus:border-ink focus:outline-none;
   }
 
-  .pill {
-    @apply inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wide;
+  /* Status marker: coloured square + word */
+  .status {
+    @apply inline-flex items-center gap-1.5 font-cond text-[12px] font-bold uppercase tracking-[0.06em];
+  }
+  .status::before {
+    content: '';
+    @apply inline-block h-2.5 w-2.5 bg-current;
+  }
+  .status-good { @apply text-go; }
+  .status-caution { @apply text-caution; }
+  .status-bad { @apply text-nogo; }
+
+  .ruled-table th {
+    @apply whitespace-nowrap border-b border-ink px-2 py-2 text-left sm:px-3 font-cond text-[11.5px] font-semibold uppercase tracking-[0.08em] text-ink-faint;
   }
 
-  .pill-good {
-    @apply border-emerald-400/25 bg-emerald-400/10 text-emerald-300;
-  }
-
-  .pill-caution {
-    @apply border-amber-400/25 bg-amber-400/10 text-amber-300;
-  }
-
-  .pill-bad {
-    @apply border-rose-400/25 bg-rose-400/10 text-rose-300;
-  }
-
-  .skeleton {
-    @apply rounded-xl bg-[linear-gradient(90deg,rgba(255,255,255,0.03)_0%,rgba(255,255,255,0.08)_50%,rgba(255,255,255,0.03)_100%)] bg-[length:200%_100%] animate-shimmer;
-  }
-
-  .data-table th {
-    @apply whitespace-nowrap px-3 py-2.5 text-left text-[10.5px] font-semibold uppercase tracking-[0.12em] text-slate-500;
-  }
-
-  .data-table td {
-    @apply whitespace-nowrap px-3 py-2.5;
+  .ruled-table td {
+    @apply whitespace-nowrap border-b border-rule px-2 py-2 sm:px-3;
   }
 }
 
@@ -135,51 +99,45 @@
     font-variant-numeric: tabular-nums;
   }
 
-  .custom-scrollbar {
+  .thin-scrollbar {
     scrollbar-width: thin;
-    scrollbar-color: #24324f transparent;
+    scrollbar-color: #b9b3a4 transparent;
   }
-  .custom-scrollbar::-webkit-scrollbar {
+  .thin-scrollbar::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #24324f;
-    border-radius: 8px;
-    border: 2px solid #080d18;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #344566;
+  .thin-scrollbar::-webkit-scrollbar-thumb {
+    background: #b9b3a4;
   }
 }
 
-/* Leaflet dark theming */
+/* Leaflet on paper */
 .leaflet-container {
-  background: #080d18;
+  background: #e9e5d9;
   font-family: inherit;
 }
-/* Turn the standard OSM raster into a dark basemap (no API key needed) */
-.map-tiles-dark {
-  filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9) saturate(0.5);
+.leaflet-tile-pane {
+  filter: saturate(0.55) contrast(0.95);
 }
 .leaflet-control-attribution {
-  background: rgba(4, 7, 13, 0.75) !important;
-  color: #64748b !important;
+  background: rgba(243, 240, 232, 0.9) !important;
+  color: #4a473f !important;
   font-size: 10px !important;
 }
-.leaflet-control-attribution a {
-  color: #94a3b8 !important;
+.leaflet-bar {
+  border: 1px solid #16150f !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 .leaflet-bar a {
-  background: #111a2d !important;
-  color: #e2e8f0 !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  border-radius: 0 !important;
+  background: #f3f0e8 !important;
+  color: #16150f !important;
 }
 .leaflet-bar a:hover {
-  background: #19243c !important;
+  background: #16150f !important;
+  color: #f3f0e8 !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -19,7 +19,7 @@ const TONE_TEXT = { normal: 'text-ink', warning: 'text-caution', critical: 'text
 const TONE_TAG = { warning: ['status-caution', 'statusCaution'], critical: ['status-bad', 'statusCritical'] };
 
 const Cell = ({ title, value, unit, sub, tone = 'normal', tooltip, aside, t }) => (
-  <div className="flex min-h-[132px] flex-col border-b border-r border-rule p-4">
+  <div className="flex min-h-[128px] flex-col bg-surface p-4">
     <div className="flex items-center gap-1.5">
       <span className="label min-w-0 flex-1 truncate">{title}</span>
       {tooltip && <InfoTip title={tooltip.title} label={tooltip.title}>{tooltip.desc}</InfoTip>}
@@ -41,7 +41,7 @@ const Cell = ({ title, value, unit, sub, tone = 'normal', tooltip, aside, t }) =
 );
 
 const Bar = ({ pct, tone = 'normal' }) => (
-  <div className="mb-1.5 h-1 w-full bg-paper-deep">
+  <div className="mb-1.5 h-1 w-full overflow-hidden rounded-full bg-paper-deep">
     <div
       className={`h-full ${tone === 'critical' ? 'bg-nogo' : tone === 'warning' ? 'bg-caution-bright' : 'bg-ink'}`}
       style={{ width: `${Math.max(0, Math.min(100, toNumber(pct, 0)))}%` }}
@@ -54,20 +54,20 @@ const Compass = ({ degree }) => {
   const rot = (toNumber(degree, 0) + 180) % 360;
   return (
     <svg viewBox="0 0 48 48" className="h-12 w-12 flex-shrink-0" aria-hidden="true">
-      <circle cx="24" cy="24" r="21" fill="none" stroke="#16150f" strokeWidth="1" />
+      <circle cx="24" cy="24" r="21" className="fill-paper-deep stroke-line-strong" strokeWidth="1" />
       {Array.from({ length: 36 }).map((_, i) => (
         <line
           key={i}
           x1="24" y1="3" x2="24" y2={i % 9 === 0 ? 8 : 5}
-          stroke="#16150f"
+          className={i % 9 === 0 ? 'stroke-ink' : 'stroke-ink-faint'}
           strokeWidth={i % 9 === 0 ? 1.4 : 0.6}
           transform={`rotate(${i * 10} 24 24)`}
         />
       ))}
-      <text x="24" y="15" textAnchor="middle" fontSize="6" fontFamily="IBM Plex Mono, monospace" fill="#16150f">N</text>
+      <text x="24" y="15" textAnchor="middle" fontSize="6" fontFamily="IBM Plex Mono, monospace" className="fill-ink">N</text>
       <g transform={`rotate(${rot} 24 24)`} style={{ transition: 'transform 0.6s ease-out' }}>
-        <line x1="24" y1="34" x2="24" y2="16" stroke="#e8550f" strokeWidth="2" />
-        <path d="M24 13 L27.5 20 L20.5 20 Z" fill="#e8550f" />
+        <line x1="24" y1="34" x2="24" y2="16" className="stroke-signal" strokeWidth="2" />
+        <path d="M24 13 L27.5 20 L20.5 20 Z" className="fill-signal" />
       </g>
     </svg>
   );
@@ -79,7 +79,7 @@ const KpScale = ({ kp }) => (
       const lvl = i + 1;
       const active = kp >= lvl - 0.5;
       const color = lvl >= 5 ? 'bg-nogo' : lvl >= 4 ? 'bg-caution-bright' : 'bg-ink';
-      return <span key={i} className={`h-2 flex-1 ${active ? color : 'bg-paper-deep'}`} />;
+      return <span key={i} className={`h-2 flex-1 rounded-[2px] ${active ? color : 'bg-paper-deep'}`} />;
     })}
   </div>
 );
@@ -197,12 +197,12 @@ const MetricsGrid = ({ data, language, windUnit = 'km/h' }) => {
   ];
 
   return (
-    <section>
-      <div className="section-title">
-        <span className="num">02</span>
-        <h2>{t.sectionConditions}</h2>
+    <section className="panel">
+      <div className="panel-head">
+        <h2 className="panel-title">{t.sectionConditions}</h2>
+        <span className="panel-sub">{t.sectionConditionsSub}</span>
       </div>
-      <div className="grid grid-cols-2 border-l border-rule sm:grid-cols-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-px bg-rule sm:grid-cols-3 lg:grid-cols-4">
         {cells.map(c => <Cell key={c.title} {...c} t={t} />)}
       </div>
     </section>

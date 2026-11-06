@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header';
-import BriefingHeader from './components/BriefingHeader';
 import FlightStatus from './components/FlightStatus';
 import MetricsGrid from './components/MetricsGrid';
 import HourlyForecast from './components/HourlyForecast';
@@ -136,6 +135,11 @@ const App = () => {
         setWindUnit={setWindUnit}
         theme={theme}
         setTheme={setTheme}
+        locationName={locationName || (loading ? t.loading : '')}
+        coords={coords}
+        current={weatherData?.current}
+        updatedAt={updatedAt}
+        onOpenModal={openModal}
         onRefresh={refresh}
         loading={loading}
       />
@@ -154,16 +158,7 @@ const App = () => {
           <LoadingState t={t} />
         ) : (
           <div className={`transition-opacity ${loading ? 'opacity-60' : 'opacity-100'}`}>
-            <BriefingHeader
-              data={weatherData.current}
-              coords={coords}
-              locationName={locationName}
-              language={language}
-              windUnit={windUnit}
-              updatedAt={updatedAt}
-              onChangeLocation={openModal}
-            />
-            <div className="space-y-5">
+            <div className="space-y-5 pt-6">
               <FlightStatus data={weatherData.current} language={language} windUnit={windUnit} />
               <MetricsGrid data={weatherData.current} language={language} windUnit={windUnit} />
               <HourlyForecast hourlyData={weatherData.hourlyForecast} language={language} windUnit={windUnit} />

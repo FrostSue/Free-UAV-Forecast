@@ -5,8 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>UAV Forecast — Drone Uçuş Hava Durumu</title>
     <meta name="description" content="Drone ve İHA pilotları için gerçek zamanlı hava durumu, irtifa rüzgar profili, Kp indeksi ve GNSS uydu analizi." />
-    <meta name="theme-color" content="#f3f0e8" />
-    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#090c13" />
+    <meta name="color-scheme" content="dark light" />
+    <script>
+      // Apply the saved (or system) theme before first paint to avoid a flash.
+      (function () {
+        var theme;
+        try { theme = localStorage.getItem('uav_theme'); } catch (e) {}
+        if (theme !== 'light' && theme !== 'dark') {
+          theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        }
+        if (theme === 'dark') document.documentElement.classList.add('dark');
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', theme === 'dark' ? '#090c13' : '#e9e7e1');
+      })();
+    </script>
 
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <link rel="apple-touch-icon" href="./apple-touch-icon.png" />

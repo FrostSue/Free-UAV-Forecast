@@ -10,13 +10,6 @@ export const WIND_UNITS = {
   MPH: 'mph'
 };
 
-export const WIND_UNIT_LABELS = {
-  'km/h': 'km/h',
-  'kn': 'kn',
-  'm/s': 'm/s',
-  'mph': 'mph'
-};
-
 // Precise mathematical conversion factors from km/h
 // 1 knot = 1.852 km/h
 // 1 m/s  = 3.6 km/h
@@ -68,16 +61,4 @@ export const toCanonicalKmh = (value, sourceUnit = 'km/h') => {
   
   const factor = KMH_TO_UNIT_FACTORS[sourceUnit] ?? 1.0;
   return numericVal / factor;
-};
-
-/**
- * Returns formatted threshold text for safety warnings in the chosen unit.
- * Canonical thresholds (km/h):
- * - Critical Gust: 35 km/h
- * - Caution Gust: 25 km/h
- * - Critical Wind: 28 km/h
- */
-export const getThresholdLabel = (canonicalKmh, targetUnit = 'km/h') => {
-  const converted = convertWindSpeed(canonicalKmh, targetUnit, targetUnit === 'm/s' || targetUnit === 'kn' ? 1 : 0);
-  return `${converted} ${targetUnit}`;
 };

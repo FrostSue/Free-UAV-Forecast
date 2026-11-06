@@ -19,12 +19,13 @@
 
 ## ✨ Features
 
-- **Flight readiness verdict + pre-flight checklist** — wind, gusts, precipitation, visibility (VLOS), geomagnetic activity, LiPo battery temperature and GNSS coverage, each rated *ok / caution / critical*.
+- **Pre-flight briefing layout** — a print-style briefing sheet with a GO / CAUTION / NO-GO verdict, every criterion shown next to its limits, and a copyable METAR-style summary line.
+- **Flight readiness checklist** — wind, gusts, precipitation, visibility (VLOS), geomagnetic activity, LiPo battery temperature and GNSS coverage, each rated *ok / caution / critical*.
 - **Physics-based altitude wind profile** — atmospheric boundary-layer power law ($v(z) = v_{ref} \cdot (z / z_{ref})^\alpha$) over 10 tiers from 20 m to 400 m AGL, rendered as a sounding-style bar chart.
 - **Interactive 24/48/72-hour timeline** — wind & gust chart with caution/critical thresholds, a colour-coded flyability strip and a detailed hourly table. Export to JSON for mission planners or flight logs.
 - **Live space weather** — planetary Kp index from NOAA SWPC (supports both current and legacy API formats).
 - **Live GNSS geometry** — Keplerian propagation of CelesTrak GPS ephemeris (UTC epochs, sidereal-time Earth rotation) with a 15° elevation mask, scaled for multi-constellation receivers.
-- **Location picker** — city search, GPS / IP auto-location, manual coordinates and a dark interactive map.
+- **Location picker** — city search, GPS / IP auto-location, manual coordinates and an interactive OpenStreetMap picker.
 - **Bilingual UI (TR / EN)**, four wind units (km/h, kn, m/s, mph), remembered preferences, auto-refresh every 10 minutes, installable as a PWA.
 
 ## 🛠️ Tech stack & data sources

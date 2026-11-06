@@ -103,7 +103,7 @@ const InfoTip = ({ title, children, label = 'Info' }) => {
         onClick={toggle}
         onMouseEnter={enter}
         onMouseLeave={leave}
-        className="inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:bg-white/[0.08] hover:text-brand-300 aria-expanded:bg-white/[0.08] aria-expanded:text-brand-300"
+        className="inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-ink-faint transition-colors hover:text-ink aria-expanded:bg-ink aria-expanded:text-paper"
       >
         <Icon name="info" className="h-3.5 w-3.5" />
       </button>
@@ -121,19 +121,19 @@ const InfoTip = ({ title, children, label = 'Info' }) => {
             width: pos?.width ?? POPOVER_WIDTH,
             visibility: pos ? 'visible' : 'hidden'
           }}
-          className="z-[1000] animate-scale-in rounded-2xl border border-white/10 bg-ink-850 p-4 text-left shadow-2xl shadow-black/60"
+          className="z-[1000] animate-fade-in border border-ink bg-paper p-4 text-left shadow-[0_12px_30px_-12px_rgba(22,21,15,0.35)]"
         >
           {pos && (
             <span
-              className={`absolute h-3 w-3 rotate-45 border-white/10 bg-ink-850 ${pos.below ? '-top-1.5 border-l border-t' : '-bottom-1.5 border-b border-r'}`}
+              className={`absolute h-3 w-3 rotate-45 border-ink bg-paper ${pos.below ? '-top-1.5 border-l border-t' : '-bottom-1.5 border-b border-r'}`}
               style={{ left: pos.arrowX - 6 }}
             />
           )}
-          <div className="mb-1.5 flex items-center gap-2 text-[13px] font-semibold text-white">
-            <Icon name="info" className="h-4 w-4 text-brand-300" />
+          <div className="mb-2 border-b border-rule pb-2 font-cond text-[14px] font-bold uppercase tracking-[0.04em] text-ink">
+            
             <span>{title}</span>
           </div>
-          <div className="text-[12px] leading-relaxed text-slate-300">{children}</div>
+          <div className="text-[13px] leading-relaxed text-ink-soft">{children}</div>
         </div>,
         document.body
       )}

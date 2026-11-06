@@ -4,7 +4,7 @@
  */
 const Logo = ({ className = 'h-8 w-8' }) => (
   <svg viewBox="0 0 64 64" className={className} aria-hidden="true">
-    <rect width="64" height="64" rx="10" fill="#16150f" />
+    <rect x="1" y="1" width="62" height="62" rx="10" fill="#16150f" className="stroke-line-strong" strokeWidth="2" />
     <line x1="13" y1="9" x2="13" y2="56" stroke="#f3f0e8" strokeWidth="3.5" strokeLinecap="round" />
     <polygon points="15,12 23.2,13.6 23.2,29.6 15,30" fill="#e8550f" />
     <polygon points="23.2,13.6 31.4,15.2 31.4,29.2 23.2,29.6" fill="#f3f0e8" />

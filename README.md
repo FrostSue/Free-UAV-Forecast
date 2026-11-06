@@ -1,38 +1,56 @@
-# 🚁 UAV Forecast
+<p align="center">
+  <img src="public/favicon.svg" width="96" height="96" alt="UAV Forecast logo" />
+</p>
 
-![React](https://img.shields.io/badge/React-18.x-blue.svg)
-![Vite](https://img.shields.io/badge/Vite-5.x-purple.svg)
-![Tailwind](https://img.shields.io/badge/TailwindCSS-3.x-38B2AC.svg)
-![License](https://img.shields.io/badge/License-MIT-green.svg)
+<h1 align="center">UAV Forecast</h1>
 
-**UAV Forecast** is a high-performance, web-based meteorological and space-weather intelligence tool designed specifically for Unmanned Aerial Vehicle (UAV) and FPV drone pilots. It provides critical, real-time atmospheric and orbital GNSS data required for safe and efficient flight planning, eliminating the guesswork from pre-flight checks.
+<p align="center">
+  Real-time weather, wind-shear, space-weather and GNSS intelligence for drone &amp; UAV pilots.
+</p>
 
----
-
-## ✨ Key Features
-
-* **Physics-Based Wind Profiling (Power Law):** Implements atmospheric boundary layer wind shear modeling ($v(z) = v_{ref} \cdot (z / z_{ref})^\alpha$) across 10 altitude tiers (20m, 40m, 60m, 80m, 120m, 150m, 180m, 250m, 300m, 400m) to prevent extrapolation runaway or unrealistic zeroing.
-* **Real-Time Space Weather (NOAA SWPC):** Integrates live planetary K-index telemetry directly from the NOAA Space Weather Prediction Center API to monitor geomagnetic storm activity that causes GPS signal degradation and compass flyaways.
-* **Live GNSS / GPS Orbital Tracking (CelesTrak):** Real-time orbital propagation using Keplerian orbital mechanics against active GPS constellation elements to calculate true line-of-sight satellite visibility (>0°) and locked satellites above a 15° elevation mask.
-* **Interactive Map & Reliable Geocoding:** Features a `react-leaflet` map with coordinate boundary protection. Resolves city names via BigDataCloud client API and Open-Meteo Geocoding without 403 rate limits.
-* **Multi-Factor Flight Safety Analysis:** Evaluates flight safety across sustained wind, gusts, precipitation probability, cloud cover, visibility (VLOS compliance), LiPo battery safe temperature thresholds, and geomagnetic conditions.
-* **72-Hour Rolling Forecast & JSON Export:** Export 1, 2, or 3-day meteorological data directly to `.json` format for mission planners or flight logs.
-* **Dynamic Bilingual Interface:** Turkish and English support with localized metric/imperial units and time formats.
+<p align="center">
+  <img src="https://img.shields.io/badge/React-18-61dafb.svg" alt="React" />
+  <img src="https://img.shields.io/badge/Vite-5-646cff.svg" alt="Vite" />
+  <img src="https://img.shields.io/badge/TailwindCSS-3-38b2ac.svg" alt="Tailwind" />
+  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License" />
+</p>
 
 ---
 
-## 🛠️ Tech Stack & Live APIs
+## ✨ Features
 
-* **Core:** React 18 + Vite
-* **Styling:** Tailwind CSS
-* **Maps:** React-Leaflet (OpenStreetMap)
-* **APIs Used (No API Keys Required):**
-  * **[Open-Meteo](https://open-meteo.com/):** High-resolution atmospheric and multi-tier wind forecast.
-  * **[NOAA SWPC](https://services.swpc.noaa.gov/):** Real-time planetary K-index (Space Weather).
-  * **[CelesTrak](https://celestrak.org/):** Live GPS constellation Keplerian orbital elements.
-  * **[BigDataCloud](https://www.bigdatacloud.com/) & Open-Meteo Geocoding:** CORS-enabled reverse and search geocoding.
+- **Flight readiness verdict + pre-flight checklist** — wind, gusts, precipitation, visibility (VLOS), geomagnetic activity, LiPo battery temperature and GNSS coverage, each rated *ok / caution / critical*.
+- **Physics-based altitude wind profile** — atmospheric boundary-layer power law ($v(z) = v_{ref} \cdot (z / z_{ref})^\alpha$) over 10 tiers from 20 m to 400 m AGL, rendered as a sounding-style bar chart.
+- **Interactive 24/48/72-hour timeline** — wind & gust chart with caution/critical thresholds, a colour-coded flyability strip and a detailed hourly table. Export to JSON for mission planners or flight logs.
+- **Live space weather** — planetary Kp index from NOAA SWPC (supports both current and legacy API formats).
+- **Live GNSS geometry** — Keplerian propagation of CelesTrak GPS ephemeris (UTC epochs, sidereal-time Earth rotation) with a 15° elevation mask, scaled for multi-constellation receivers.
+- **Location picker** — city search, GPS / IP auto-location, manual coordinates and a dark interactive map.
+- **Bilingual UI (TR / EN)**, four wind units (km/h, kn, m/s, mph), remembered preferences, auto-refresh every 10 minutes, installable as a PWA.
 
----
+## 🛠️ Tech stack & data sources
+
+- **Core:** React 18 + Vite 5, Tailwind CSS 3, React-Leaflet
+- **APIs (no keys required):**
+  - [Open-Meteo](https://open-meteo.com/) — forecast & geocoding
+  - [NOAA SWPC](https://www.swpc.noaa.gov/) — planetary K-index
+  - [CelesTrak](https://celestrak.org/) — GPS orbital elements
+  - [BigDataCloud](https://www.bigdatacloud.com/) / [Nominatim](https://nominatim.org/) — reverse geocoding
+  - [OpenStreetMap](https://www.openstreetmap.org/copyright) — map tiles
+
+## 🚀 Getting started
+
+```bash
+npm install
+npm run dev      # start the dev server
+npm test         # run unit tests (node:test)
+npm run build    # production build into dist/
+```
+
+Pushing to `main` runs the tests, builds and deploys to GitHub Pages via `.github/workflows/deploy.yml`.
+
+## ⚠️ Disclaimer
+
+UAV Forecast is an advisory tool. Always follow your local aviation authority's drone regulations and use your own judgement before flying.
 
 ## 📝 License
 

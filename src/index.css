@@ -2,9 +2,57 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Theme tokens (RGB triplets). Light is a soft stone palette, dark is a deep
+ * slate cockpit palette. Status colours are tuned per theme for contrast.
+ */
 @layer base {
   :root {
     color-scheme: light;
+    --bg: 233 231 225;
+    --surface: 246 245 241;
+    --surface-2: 238 236 230;
+    --text: 24 26 31;
+    --text-2: 78 82 92;
+    --text-3: 122 126 136;
+    --line: 218 215 207;
+    --line-strong: 186 182 172;
+    --accent: 226 88 22;
+
+    --go: 28 118 66;
+    --go-bg: 222 237 226;
+    --go-solid: 30 120 70;
+    --caution: 140 82 0;
+    --caution-bright: 204 140 30;
+    --caution-bg: 245 232 204;
+    --caution-solid: 178 108 4;
+    --nogo: 178 38 30;
+    --nogo-bg: 246 221 217;
+    --nogo-solid: 182 40 32;
+  }
+
+  .dark {
+    color-scheme: dark;
+    --bg: 9 12 19;
+    --surface: 16 21 31;
+    --surface-2: 23 29 42;
+    --text: 230 234 241;
+    --text-2: 163 171 186;
+    --text-3: 112 120 137;
+    --line: 33 40 55;
+    --line-strong: 52 61 81;
+    --accent: 255 128 66;
+
+    --go: 86 204 142;
+    --go-bg: 18 44 33;
+    --go-solid: 24 104 62;
+    --caution: 238 177 70;
+    --caution-bright: 221 157 46;
+    --caution-bg: 50 38 16;
+    --caution-solid: 150 92 8;
+    --nogo: 245 110 100;
+    --nogo-bg: 56 22 23;
+    --nogo-solid: 168 38 32;
   }
 
   html {
@@ -13,15 +61,15 @@
 
   body {
     @apply m-0 min-h-screen bg-paper font-sans text-ink antialiased;
-    font-feature-settings: 'ss02';
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   ::selection {
-    @apply bg-signal text-paper;
+    @apply bg-signal text-white;
   }
 
   :focus-visible {
-    @apply outline-none ring-2 ring-ink ring-offset-2 ring-offset-paper;
+    @apply outline-none ring-2 ring-signal/70 ring-offset-2 ring-offset-paper;
   }
 
   input[type='number']::-webkit-inner-spin-button,
@@ -38,39 +86,52 @@
 }
 
 @layer components {
-  /* Small-caps style label used for every field name on the briefing sheet */
+  .panel {
+    @apply overflow-hidden rounded-xl border border-rule bg-surface;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  }
+
+  .panel-head {
+    @apply flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-rule px-4 py-3.5 sm:px-5;
+  }
+
+  .panel-title {
+    @apply text-[15px] font-semibold tracking-[-0.005em] text-ink;
+  }
+
+  .panel-sub {
+    @apply text-[12.5px] text-ink-faint;
+  }
+
   .label {
     @apply font-cond text-[11.5px] font-semibold uppercase tracking-[0.08em] text-ink-faint;
   }
 
-  .section-title {
-    @apply flex items-baseline gap-3 border-b border-ink pb-2;
+  /* Segmented control (units, language, ranges, theme) */
+  .seg {
+    @apply inline-flex items-center rounded-lg border border-rule bg-paper-deep p-0.5;
+  }
+  .seg > button {
+    @apply rounded-md px-2 py-1 font-mono text-[12px] text-ink-faint transition-colors hover:text-ink aria-pressed:bg-surface aria-pressed:font-medium aria-pressed:text-ink;
+  }
+  .seg > button[aria-pressed='true'] {
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.12), inset 0 0 0 1px rgb(var(--line));
   }
 
-  .section-title > .num {
-    @apply font-mono text-[12px] text-ink-faint;
-  }
-
-  .section-title > h2,
-  .section-title > h3 {
-    @apply font-cond text-[19px] font-bold uppercase tracking-[0.04em] text-ink;
-  }
-
-  /* Text toggles (units, language, ranges) */
-  .toggle {
-    @apply px-1.5 py-1 font-mono text-[12px] text-ink-faint underline-offset-[6px] transition-colors hover:text-ink aria-pressed:font-semibold aria-pressed:text-ink aria-pressed:underline aria-pressed:decoration-2;
+  .icon-btn {
+    @apply inline-flex h-8 w-8 items-center justify-center rounded-lg border border-rule bg-paper-deep text-ink-soft transition-colors hover:text-ink disabled:opacity-40;
   }
 
   .btn {
-    @apply inline-flex items-center justify-center gap-1.5 border border-ink bg-transparent px-3 py-1.5 font-cond text-[13px] font-semibold uppercase tracking-[0.06em] text-ink transition-colors hover:bg-ink hover:text-paper active:translate-y-px disabled:pointer-events-none disabled:opacity-40;
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg border border-rule bg-paper-deep px-3 py-1.5 text-[13px] font-medium text-ink transition-colors hover:border-line-strong active:translate-y-px disabled:pointer-events-none disabled:opacity-40;
   }
 
   .btn-solid {
-    @apply inline-flex items-center justify-center gap-2 border border-ink bg-ink px-4 py-2.5 font-cond text-[14px] font-semibold uppercase tracking-[0.08em] text-paper transition-colors hover:bg-ink-soft active:translate-y-px disabled:opacity-40;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-ink px-4 py-2.5 text-[14px] font-semibold text-paper transition-opacity hover:opacity-90 active:translate-y-px disabled:opacity-40;
   }
 
   .field {
-    @apply w-full border border-rule bg-paper px-3 py-2.5 text-[14px] text-ink placeholder:text-ink-faint transition-colors focus:border-ink focus:outline-none;
+    @apply w-full rounded-lg border border-rule bg-paper px-3 py-2.5 text-[14px] text-ink placeholder:text-ink-faint transition-colors focus:border-line-strong focus:outline-none;
   }
 
   /* Status marker: coloured square + word */
@@ -79,18 +140,20 @@
   }
   .status::before {
     content: '';
-    @apply inline-block h-2.5 w-2.5 bg-current;
+    @apply inline-block h-2 w-2 rounded-[2px] bg-current;
   }
   .status-good { @apply text-go; }
   .status-caution { @apply text-caution; }
   .status-bad { @apply text-nogo; }
 
   .ruled-table th {
-    @apply whitespace-nowrap border-b border-ink px-2 py-2 text-left sm:px-3 font-cond text-[11.5px] font-semibold uppercase tracking-[0.08em] text-ink-faint;
+    @apply whitespace-nowrap border-b border-rule px-2 py-2.5 text-left font-cond text-[11.5px] font-semibold uppercase tracking-[0.08em] text-ink-faint sm:px-3;
   }
-
   .ruled-table td {
-    @apply whitespace-nowrap border-b border-rule px-2 py-2 sm:px-3;
+    @apply whitespace-nowrap border-b border-rule px-2 py-2.5 sm:px-3;
+  }
+  .ruled-table tr:last-child td {
+    @apply border-b-0;
   }
 }
 
@@ -101,43 +164,50 @@
 
   .thin-scrollbar {
     scrollbar-width: thin;
-    scrollbar-color: #b9b3a4 transparent;
+    scrollbar-color: rgb(var(--line-strong)) transparent;
   }
   .thin-scrollbar::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
   .thin-scrollbar::-webkit-scrollbar-thumb {
-    background: #b9b3a4;
+    background: rgb(var(--line-strong));
+    border-radius: 8px;
   }
 }
 
-/* Leaflet on paper */
+/* Leaflet, themed */
 .leaflet-container {
-  background: #e9e5d9;
+  background: rgb(var(--surface-2));
   font-family: inherit;
 }
 .leaflet-tile-pane {
-  filter: saturate(0.55) contrast(0.95);
+  filter: saturate(0.6) contrast(0.95);
+}
+.dark .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.88) saturate(0.45);
 }
 .leaflet-control-attribution {
-  background: rgba(243, 240, 232, 0.9) !important;
-  color: #4a473f !important;
+  background: rgb(var(--surface) / 0.9) !important;
+  color: rgb(var(--text-2)) !important;
   font-size: 10px !important;
 }
+.leaflet-control-attribution a {
+  color: rgb(var(--text)) !important;
+}
 .leaflet-bar {
-  border: 1px solid #16150f !important;
-  border-radius: 0 !important;
+  border: 1px solid rgb(var(--line-strong)) !important;
+  border-radius: 8px !important;
+  overflow: hidden;
   box-shadow: none !important;
 }
 .leaflet-bar a {
-  border-radius: 0 !important;
-  background: #f3f0e8 !important;
-  color: #16150f !important;
+  background: rgb(var(--surface)) !important;
+  color: rgb(var(--text)) !important;
+  border-color: rgb(var(--line)) !important;
 }
 .leaflet-bar a:hover {
-  background: #16150f !important;
-  color: #f3f0e8 !important;
+  background: rgb(var(--surface-2)) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

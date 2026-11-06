@@ -142,7 +142,7 @@ const LocationModal = ({ isOpen, onClose, onSelect, language, initialCoords, ini
 
   return (
     <div
-      className="fixed inset-0 z-[900] flex items-end justify-center bg-ink/50 p-0 sm:items-center sm:p-4"
+      className="fixed inset-0 z-[900] flex items-end justify-center bg-black/55 p-0 backdrop-blur-[2px] sm:items-center sm:p-4"
       onMouseDown={(e) => e.target === e.currentTarget && onClose()}
       role="presentation"
     >
@@ -150,22 +150,22 @@ const LocationModal = ({ isOpen, onClose, onSelect, language, initialCoords, ini
         role="dialog"
         aria-modal="true"
         aria-labelledby="location-modal-title"
-        className="flex max-h-[94vh] w-full max-w-xl animate-fade-in flex-col border border-ink bg-paper shadow-[0_24px_60px_-24px_rgba(22,21,15,0.5)]"
+        className="flex max-h-[94vh] w-full max-w-xl animate-fade-in flex-col overflow-hidden rounded-t-2xl border border-rule bg-surface shadow-2xl shadow-black/40 sm:rounded-2xl"
       >
         {/* Header */}
-        <div className="flex items-start justify-between gap-3 border-b border-ink px-5 py-4">
+        <div className="flex items-start justify-between gap-3 border-b border-rule px-5 py-4">
           <div>
             <h3 id="location-modal-title" className="font-cond text-[20px] font-bold uppercase tracking-[0.04em]">{t.locationPickerTitle}</h3>
             <p className="text-[13px] text-ink-soft">{t.locationPickerSub}</p>
           </div>
-          <button type="button" onClick={onClose} className="inline-flex h-8 w-8 items-center justify-center text-ink-soft hover:text-ink" aria-label={t.close}>
+          <button type="button" onClick={onClose} className="icon-btn" aria-label={t.close}>
             <Icon name="x" className="h-5 w-5" />
           </button>
         </div>
 
         <div className="thin-scrollbar flex-1 space-y-4 overflow-y-auto p-5">
           {validationError && (
-            <div className="flex items-center gap-2 border-l-4 border-nogo bg-nogo-soft px-3 py-2 text-[13px] text-nogo">
+            <div className="flex items-center gap-2 rounded-lg border border-nogo/30 bg-nogo-soft px-3 py-2 text-[13px] text-nogo">
               <Icon name="alert" className="h-4 w-4 flex-shrink-0" />
               {validationError}
             </div>
@@ -181,17 +181,17 @@ const LocationModal = ({ isOpen, onClose, onSelect, language, initialCoords, ini
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t.searchLocation}
-                className="field border-ink pl-9"
+                className="field rounded-r-none pl-9"
                 aria-label={t.searchLocation}
               />
             </div>
-            <button type="submit" disabled={isSearching} className="btn-solid -ml-px min-w-[84px] py-0">
+            <button type="submit" disabled={isSearching} className="btn-solid -ml-px min-w-[84px] rounded-l-none py-0">
               {isSearching ? <Icon name="refresh" className="h-4 w-4 animate-spin" /> : t.search}
             </button>
           </form>
 
           {searchResults.length > 0 && (
-            <ul className="thin-scrollbar max-h-52 overflow-y-auto border border-ink">
+            <ul className="thin-scrollbar max-h-52 overflow-y-auto rounded-lg border border-rule bg-paper">
               {searchResults.map(item => (
                 <li key={item.id} className="border-b border-rule last:border-b-0">
                   <button
@@ -248,7 +248,7 @@ const LocationModal = ({ isOpen, onClose, onSelect, language, initialCoords, ini
           </button>
 
           {/* Map */}
-          <div className="relative h-64 w-full border border-ink sm:h-72">
+          <div className="relative h-64 w-full overflow-hidden rounded-xl border border-rule sm:h-72">
             <MapContainer center={mapCenter} zoom={10} className="h-full w-full" worldCopyJump>
               <TileLayer
                 url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -257,16 +257,16 @@ const LocationModal = ({ isOpen, onClose, onSelect, language, initialCoords, ini
               />
               <MapUpdater center={mapCenter} />
               <MapClickHandler onPick={handleMapPick} />
-              <CircleMarker center={mapCenter} radius={14} pathOptions={{ color: '#e8550f', weight: 2, fillOpacity: 0 }} />
-              <CircleMarker center={mapCenter} radius={4} pathOptions={{ color: '#16150f', weight: 0, fillColor: '#16150f', fillOpacity: 1 }} />
+              <CircleMarker center={mapCenter} radius={14} pathOptions={{ color: '#ff8042', weight: 2, fillOpacity: 0.12, fillColor: '#ff8042' }} />
+              <CircleMarker center={mapCenter} radius={4} pathOptions={{ color: '#ffffff', weight: 2, fillColor: '#e2581a', fillOpacity: 1 }} />
             </MapContainer>
-            <div className="pointer-events-none absolute right-2 top-2 z-[500] border border-ink bg-paper px-2 py-1 text-[11.5px]">
+            <div className="pointer-events-none absolute right-2 top-2 z-[500] rounded-md border border-rule bg-surface/95 px-2 py-1 text-[11.5px] text-ink">
               {t.mapHint}
             </div>
           </div>
         </div>
 
-        <div className="border-t border-ink p-4">
+        <div className="border-t border-rule p-4">
           <button type="button" onClick={handleConfirm} className="btn-solid w-full py-3">
             {t.confirmLocation}
           </button>

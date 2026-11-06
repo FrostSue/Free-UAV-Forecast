@@ -1,82 +1,185 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header';
 import FlightStatus from './components/FlightStatus';
 import MetricsGrid from './components/MetricsGrid';
 import HourlyForecast from './components/HourlyForecast';
 import WindProfile from './components/WindProfile';
 import LocationModal from './components/LocationModal';
+import Icon from './components/Icon';
+import Logo from './components/Logo';
 import useWeatherData from './hooks/useWeatherData';
-import { locales } from './utils/locales';
+import { getLocale } from './utils/locales';
+import { WIND_UNITS } from './utils/units';
+
+const AUTO_REFRESH_MS = 10 * 60 * 1000;
+const VALID_UNITS = Object.values(WIND_UNITS);
+
+const readPref = (key, fallback, allowed) => {
+  try {
+    const v = localStorage.getItem(key);
+    return v && (!allowed || allowed.includes(v)) ? v : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+const writePref = (key, value) => {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // storage unavailable (private mode)
+  }
+};
+
+const detectLanguage = () => {
+  const stored = readPref('uav_lang', null, ['tr', 'en']);
+  if (stored) return stored;
+  const nav = typeof navigator !== 'undefined' ? navigator.language || '' : '';
+  return nav.toLowerCase().startsWith('tr') ? 'tr' : 'en';
+};
+
+const LoadingState = ({ t }) => (
+  <div className="space-y-5">
+    <div className="panel flex flex-col items-center justify-center gap-4 px-6 py-14 text-center">
+      <div className="relative">
+        <span className="absolute inset-0 animate-ping rounded-2xl bg-brand-400/20" />
+        <Logo className="relative h-14 w-14" />
+      </div>
+      <div>
+        <div className="font-display text-base font-semibold text-white">{t.loading}</div>
+        <div className="mt-1 text-xs text-slate-500">{t.loadingSub}</div>
+      </div>
+    </div>
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div key={i} className="skeleton h-[118px]" />
+      ))}
+    </div>
+  </div>
+);
+
+const ErrorState = ({ t, message, onRetry, onChoose }) => (
+  <div className="panel mx-auto flex max-w-lg flex-col items-center gap-4 border-rose-400/20 px-6 py-12 text-center">
+    <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-400/10 text-rose-300 ring-1 ring-rose-400/25">
+      <Icon name="alert" className="h-7 w-7" strokeWidth={1.8} />
+    </span>
+    <div>
+      <h2 className="font-display text-lg font-semibold text-white">{t.errorTitle}</h2>
+      <p className="mt-1 text-sm text-slate-400">{message}</p>
+    </div>
+    <div className="flex gap-2">
+      <button type="button" onClick={onRetry} className="btn-primary">
+        <Icon name="refresh" className="h-4 w-4" />
+        {t.retry}
+      </button>
+      <button type="button" onClick={onChoose} className="btn px-4 py-2.5 text-sm">
+        <Icon name="mapPin" className="h-4 w-4" />
+        {t.chooseLocation}
+      </button>
+    </div>
+  </div>
+);
+
+const Footer = ({ t }) => (
+  <footer className="mt-10 flex flex-col gap-3 border-t border-white/[0.06] pt-6 text-[11.5px] text-slate-500 sm:flex-row sm:items-start sm:justify-between">
+    <div className="flex items-center gap-2.5">
+      <Logo className="h-6 w-6 opacity-80" />
+      <p className="max-w-md leading-relaxed">{t.footerDisclaimer}</p>
+    </div>
+    <p className="leading-relaxed sm:text-right">
+      {t.footerSources}:{' '}
+      <a className="text-slate-400 hover:text-brand-300" href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo</a> ·{' '}
+      <a className="text-slate-400 hover:text-brand-300" href="https://www.swpc.noaa.gov/" target="_blank" rel="noreferrer">NOAA SWPC</a> ·{' '}
+      <a className="text-slate-400 hover:text-brand-300" href="https://celestrak.org/" target="_blank" rel="noreferrer">CelesTrak</a> ·{' '}
+      <a className="text-slate-400 hover:text-brand-300" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a>
+    </p>
+  </footer>
+);
 
 const App = () => {
-  const [language, setLanguage] = useState('tr');
-  const [windUnit, setWindUnit] = useState(() => {
-    try {
-      return localStorage.getItem('uav_wind_unit') || 'km/h';
-    } catch {
-      return 'km/h';
-    }
-  });
+  const [language, setLanguageState] = useState(detectLanguage);
+  const [windUnit, setWindUnitState] = useState(() => readPref('uav_wind_unit', WIND_UNITS.KMH, VALID_UNITS));
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [lastUpdateTime, setLastUpdateTime] = useState(null);
-  const { loading, error, locationName, weatherData, fetchWeather } = useWeatherData();
-  const t = locales[language] || locales['tr'];
+  const { loading, error, locationName, coords, weatherData, updatedAt, fetchWeather, refresh } = useWeatherData(language);
+  const t = getLocale(language);
+
+  const setLanguage = useCallback((lang) => {
+    setLanguageState(lang);
+    writePref('uav_lang', lang);
+  }, []);
+
+  const setWindUnit = useCallback((unit) => {
+    setWindUnitState(unit);
+    writePref('uav_wind_unit', unit);
+  }, []);
+
+  const closeModal = useCallback(() => setIsModalOpen(false), []);
 
   useEffect(() => {
-    if (weatherData) {
-      setLastUpdateTime(new Date().toISOString());
-    }
-  }, [weatherData]);
+    document.documentElement.lang = language;
+    document.title = language === 'tr'
+      ? `${t.title} — Drone Uçuş Hava Durumu`
+      : `${t.title} — Drone Flight Weather`;
+  }, [language, t.title]);
+
+  // Keep data fresh while the tab is open
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (document.visibilityState === 'visible') refresh();
+    }, AUTO_REFRESH_MS);
+    return () => clearInterval(id);
+  }, [refresh]);
+
+  const errorMessage = error ? t[error] || error : null;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-emerald-500 selection:text-white flex flex-col justify-start items-center py-0 md:py-6 px-0 md:px-4">
-      {/* Main Glassmorphism Dashboard Container */}
-      <div className="w-full max-w-5xl bg-slate-900/95 border-x md:border border-slate-800/90 md:rounded-3xl shadow-2xl overflow-hidden flex flex-col relative min-h-screen md:min-h-0">
-        <Header
-          language={language}
-          setLanguage={setLanguage}
-          windUnit={windUnit}
-          setWindUnit={setWindUnit}
-          locationName={locationName || (loading ? t.loading : '')}
-          onOpenModal={() => setIsModalOpen(true)}
-          lastUpdateTime={lastUpdateTime}
-        />
+    <div className="min-h-screen">
+      <Header
+        language={language}
+        setLanguage={setLanguage}
+        windUnit={windUnit}
+        setWindUnit={setWindUnit}
+        locationName={locationName || (loading ? t.loading : '')}
+        coords={coords}
+        onOpenModal={() => setIsModalOpen(true)}
+        onRefresh={refresh}
+        loading={loading}
+        lastUpdateTime={updatedAt}
+      />
 
-        {error ? (
-          <div className="flex-1 flex items-center justify-center p-8 text-center text-red-400">
-            <div className="bg-red-950/40 border border-red-900/60 p-6 rounded-2xl max-w-md shadow-xl backdrop-blur-md">
-              <span className="text-3xl block mb-2">⚠️</span>
-              <p className="text-sm font-semibold">{error}</p>
-            </div>
+      <main className="mx-auto max-w-6xl px-4 pb-12 pt-6 sm:px-6">
+        {weatherData && error && (
+          <div className="mb-4 flex items-center gap-2 rounded-xl border border-amber-400/25 bg-amber-400/10 px-3 py-2 text-xs text-amber-200">
+            <Icon name="alert" className="h-4 w-4 flex-shrink-0" />
+            <span className="flex-1">{errorMessage}</span>
+            <button type="button" onClick={refresh} className="font-semibold underline-offset-2 hover:underline">{t.retry}</button>
           </div>
-        ) : loading || !weatherData ? (
-          <div className="flex-1 flex flex-col items-center justify-center p-16 text-center">
-            <div className="relative flex h-12 w-12 mb-4">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-40"></span>
-              <span className="relative inline-flex rounded-full h-12 w-12 bg-emerald-600/30 border border-emerald-500/50 items-center justify-center text-xl">
-                🛰️
-              </span>
-            </div>
-            <div className="animate-pulse text-emerald-400 font-bold tracking-wider text-sm">
-              {t.loading}
-            </div>
-          </div>
+        )}
+
+        {!weatherData && error ? (
+          <ErrorState t={t} message={errorMessage} onRetry={refresh} onChoose={() => setIsModalOpen(true)} />
+        ) : !weatherData ? (
+          <LoadingState t={t} />
         ) : (
-          <div className="flex-1 pb-10 space-y-2">
-            <FlightStatus data={weatherData.current} language={language} />
+          <div className={`space-y-5 transition-opacity ${loading ? 'opacity-60' : 'opacity-100'}`}>
+            <FlightStatus data={weatherData.current} language={language} windUnit={windUnit} />
             <MetricsGrid data={weatherData.current} language={language} windUnit={windUnit} />
             <HourlyForecast hourlyData={weatherData.hourlyForecast} language={language} windUnit={windUnit} />
             <WindProfile profileData={weatherData.windProfile} language={language} windUnit={windUnit} />
           </div>
         )}
 
-        <LocationModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSelect={fetchWeather}
-          language={language}
-        />
-      </div>
+        <Footer t={t} />
+      </main>
+
+      <LocationModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onSelect={fetchWeather}
+        language={language}
+        initialCoords={coords}
+        initialName={locationName}
+      />
     </div>
   );
 };

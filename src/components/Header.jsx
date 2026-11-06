@@ -61,8 +61,8 @@ const Header = ({
     <header className="z-40 border-b border-rule bg-paper/80 backdrop-blur-xl md:sticky md:top-0">
       <div className="mx-auto flex max-w-[1200px] flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3 sm:px-6">
         {/* Brand */}
-        <div className="flex min-w-0 flex-1 items-center gap-3 md:flex-none">
-          <Logo className="h-9 w-9 flex-shrink-0 sm:h-10 sm:w-10" />
+        <div className="group/logo flex min-w-0 flex-1 items-center gap-3 md:flex-none">
+          <Logo className="h-9 w-9 flex-shrink-0 sm:h-10 sm:w-10" spin={loading} />
           <div className="min-w-0 leading-tight">
             <div className="truncate text-[16px] font-bold tracking-[-0.01em] sm:text-[18px]">{t.title}</div>
             <div className="hidden truncate text-[11.5px] text-ink-faint sm:block">{t.subtitle}</div>

@@ -9,3 +9,6 @@ dist-ssr/
 *.local
 .DS_Store
 *.log
+
+# Local Claude Code / editor tooling
+.claude/

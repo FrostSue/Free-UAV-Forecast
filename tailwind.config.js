@@ -45,6 +45,7 @@ export default {
           solid: v('nogo-solid'),
         },
         signal: v('accent'),
+        brand: v('brand'),
       },
       fontFamily: {
         sans: ['"IBM Plex Sans"', 'ui-sans-serif', 'system-ui', 'Segoe UI', 'sans-serif'],
@@ -52,6 +53,10 @@ export default {
         mono: ['"IBM Plex Mono"', 'ui-monospace', 'SFMono-Regular', 'Consolas', 'monospace'],
       },
       keyframes: {
+        'fade-up': {
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
         'slide-in': {
           '0%': { transform: 'translateX(-100%)' },
           '100%': { transform: 'translateX(250%)' },
@@ -62,6 +67,7 @@ export default {
         },
       },
       animation: {
+        'fade-up': 'fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both',
         'slide-in': 'slide-in 1.4s ease-in-out infinite',
         'fade-in': 'fade-in 0.25s ease-out both',
       },

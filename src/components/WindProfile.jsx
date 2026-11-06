@@ -4,7 +4,7 @@ import { SAFETY_THRESHOLDS as T, classifyWind, toNumber } from '../utils/flightS
 import InfoTip from './InfoTip';
 
 const STATUS = {
-  good: { cls: 'status-good', key: 'statusOk', bar: 'bg-ink' },
+  good: { cls: 'status-good', key: 'statusOk', bar: 'bg-go' },
   caution: { cls: 'status-caution', key: 'statusCaution', bar: 'bg-caution-bright' },
   bad: { cls: 'status-bad', key: 'statusCritical', bar: 'bg-nogo' }
 };
@@ -19,22 +19,21 @@ const WindProfile = ({ profileData, language = 'tr', windUnit = 'km/h' }) => {
   const pct = (v) => `${(toNumber(v, 0) / maxKmh) * 100}%`;
 
   return (
-    <section>
-      <div className="section-title flex-wrap">
-        <span className="num">04</span>
-        <h2>{t.sectionProfile}</h2>
+    <section className="panel">
+      <div className="panel-head">
+        <h2 className="panel-title">{t.sectionProfile}</h2>
         <InfoTip title={t.windProfileTooltipTitle} label={t.windProfileTooltipTitle}>
           <p className="mb-2.5">{t.windProfileTooltipDesc}</p>
-          <div className="border border-ink p-2 text-center font-mono text-[12.5px]">{t.windProfileFormula}</div>
+          <div className="rounded-md border border-rule bg-paper-deep p-2 text-center font-mono text-[12.5px] text-ink">{t.windProfileFormula}</div>
         </InfoTip>
         <span className="ml-auto flex items-center gap-4 text-[12px] text-ink-soft">
-          <span className="flex items-center gap-2"><span className="h-2.5 w-5 bg-ink" />{t.windSpeedProfile}</span>
-          <span className="flex items-center gap-2"><span className="h-2.5 w-5 bg-ink/15" />{t.gustSpeedProfile}</span>
+          <span className="flex items-center gap-2"><span className="h-2.5 w-5 rounded-sm bg-go" />{t.windSpeedProfile}</span>
+          <span className="flex items-center gap-2"><span className="h-2.5 w-5 rounded-sm bg-ink/15" />{t.gustSpeedProfile}</span>
         </span>
       </div>
-      <p className="mt-2 text-[13px] text-ink-soft">{t.windProfileSubtitle}</p>
+      <p className="px-4 pt-3 text-[13px] text-ink-soft sm:px-5">{t.windProfileSubtitle}</p>
 
-      <div className="mt-3 hidden grid-cols-[150px_1fr_170px_110px_96px] gap-4 border-b border-ink py-2 md:grid">
+      <div className="mt-3 hidden grid-cols-[150px_1fr_170px_110px_96px] gap-4 border-b border-rule px-5 py-2 md:grid">
         <span className="label">{t.altitudeAgl}</span>
         <span />
         <span className="label text-right">{t.windSpeedProfile} / {t.gustSpeedProfile}</span>
@@ -42,21 +41,21 @@ const WindProfile = ({ profileData, language = 'tr', windUnit = 'km/h' }) => {
         <span className="label">{t.fly}</span>
       </div>
 
-      <ul>
+      <ul className="pb-1">
         {tiers.map(tier => {
           const status = STATUS[classifyWind(tier.gustSpeedKmh, tier.windSpeedKmh)];
           return (
             <li
               key={tier.altitudeKey}
-              className="grid grid-cols-[auto_1fr_auto] items-center gap-x-4 gap-y-1.5 border-b border-rule py-2.5 md:grid-cols-[150px_1fr_170px_110px_96px]"
+              className="grid grid-cols-[auto_1fr_auto] items-center gap-x-4 gap-y-1.5 border-b border-rule px-4 py-2.5 last:border-b-0 sm:px-5 md:grid-cols-[150px_1fr_170px_110px_96px]"
             >
               <span className="whitespace-nowrap font-mono text-[13px] font-medium">
                 {t[tier.altitudeKey] || `${tier.altitudeMeters} m`}
               </span>
 
               <div className="relative col-span-3 row-start-2 h-3 md:col-span-1 md:row-start-auto">
-                <div className="absolute inset-y-0 left-0 bg-ink/15" style={{ width: pct(tier.gustSpeedKmh) }} />
-                <div className={`absolute inset-y-0 left-0 ${status.bar}`} style={{ width: pct(tier.windSpeedKmh) }} />
+                <div className="absolute inset-y-0 left-0 rounded-sm bg-ink/15" style={{ width: pct(tier.gustSpeedKmh) }} />
+                <div className={`absolute inset-y-0 left-0 rounded-sm ${status.bar}`} style={{ width: pct(tier.windSpeedKmh) }} />
                 <span className="absolute -inset-y-1 border-l border-dashed border-caution-bright" style={{ left: pct(T.gust.caution) }} />
                 <span className="absolute -inset-y-1 border-l border-dashed border-nogo" style={{ left: pct(T.gust.critical) }} />
               </div>

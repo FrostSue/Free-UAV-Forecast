@@ -1,7 +1,9 @@
 {
   "name": "uav-forecast",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
+  "description": "Real-time weather, wind profile, space weather and GNSS intelligence for drone and UAV pilots.",
+  "license": "MIT",
   "type": "module",
   "homepage": "https://github.com/FrostSue/Free-UAV-Forecast",
   "scripts": {

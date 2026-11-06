@@ -103,7 +103,7 @@ const InfoTip = ({ title, children, label = 'Info' }) => {
         onClick={toggle}
         onMouseEnter={enter}
         onMouseLeave={leave}
-        className="inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-ink-faint transition-colors hover:text-ink aria-expanded:bg-ink aria-expanded:text-paper"
+        className="inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-ink-faint transition-colors hover:text-ink aria-expanded:bg-paper-deep aria-expanded:text-ink"
       >
         <Icon name="info" className="h-3.5 w-3.5" />
       </button>
@@ -121,11 +121,11 @@ const InfoTip = ({ title, children, label = 'Info' }) => {
             width: pos?.width ?? POPOVER_WIDTH,
             visibility: pos ? 'visible' : 'hidden'
           }}
-          className="z-[1000] animate-fade-in border border-ink bg-paper p-4 text-left shadow-[0_12px_30px_-12px_rgba(22,21,15,0.35)]"
+          className="z-[1000] animate-fade-in rounded-xl border border-rule bg-surface p-4 text-left shadow-xl shadow-black/25"
         >
           {pos && (
             <span
-              className={`absolute h-3 w-3 rotate-45 border-ink bg-paper ${pos.below ? '-top-1.5 border-l border-t' : '-bottom-1.5 border-b border-r'}`}
+              className={`absolute h-3 w-3 rotate-45 border-rule bg-surface ${pos.below ? '-top-1.5 border-l border-t' : '-bottom-1.5 border-b border-r'}`}
               style={{ left: pos.arrowX - 6 }}
             />
           )}
